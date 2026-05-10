@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "BrokerApp",
+    "slug": "brokerapp",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "brokerapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#fafafa"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "lan.orbiter.brokerapp"
+    },
+    "android": {
+      "package": "lan.orbiter.brokerapp"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiBaseUrl": "https://api.brokerapp.orbiter",
+      "authIssuer": "https://auth.orbiter/application/o/brokerapp/",
+      "authClientId": "brokerapp-mobile"
+    }
+  }
+}
