@@ -1,0 +1,113 @@
+[project]
+name = "brokerapp"
+version = "0.1.0"
+description = "ML-powered stock forecast and decision-support tool"
+requires-python = ">=3.12,<3.13"
+readme = "README.md"
+
+[tool.uv.workspace]
+members = [
+  "apps/api",
+  "services/ingest",
+  "services/forecast",
+  "services/notifier",
+  "ml",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+  ".venv",
+  "node_modules",
+  "build",
+  "dist",
+  "mlruns",
+  "**/migrations/versions",
+]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # isort
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "UP",   # pyupgrade
+  "N",    # pep8-naming
+  "SIM",  # flake8-simplify
+  "RUF",  # ruff-specific
+  "ASYNC",# flake8-async
+  "S",    # flake8-bandit
+  "PL",   # pylint
+  "TID",  # flake8-tidy-imports
+]
+ignore = [
+  "E501",  # line length handled by formatter
+  "S101",  # asserts in tests are fine
+  "PLR0913", # too many arguments — pragmatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S", "PLR2004"]
+"**/conftest.py" = ["S"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+plugins = ["pydantic.mypy"]
+exclude = [
+  "build/",
+  "dist/",
+  ".venv/",
+  "mlruns/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "yfinance.*",
+  "ccxt.*",
+  "vectorbt.*",
+  "pandas_ta.*",
+  "darts.*",
+  "shap.*",
+  "exchange_calendars.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+  "--showlocals",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+  "error",
+  "ignore::DeprecationWarning:pkg_resources",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = ["*/tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "\\.\\.\\.",
+]

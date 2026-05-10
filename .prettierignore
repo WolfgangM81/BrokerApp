@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.turbo/
+dist/
+build/
+coverage/
+.venv/
+__pycache__/
+mlruns/
+*.lock
+pnpm-lock.yaml
+uv.lock
+infra/helm/**/templates/**
