@@ -218,8 +218,8 @@ GitLab CI/CD:
 | **0** | Repo skeleton, tooling, CI bones ✅ |
 | **1** | Data backbone — schemas, ingest, calendars, API + tests ✅ |
 | **2** | UI + Auth — Next.js + Authentik OIDC end-to-end ✅ |
-| **3** | Forecast baseline + walk-forward backtest, UI integration (current) |
-| **4** | Operations — Helm to cluster, monitoring, alerting, backups |
+| **3** | Forecast baseline + walk-forward backtest, UI integration ✅ |
+| **4** | Operations — Helm to cluster, monitoring, alerting, backups (current) |
 | **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP |
 | **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish |
 | **7** | Mobile (when needed) — Expo / React Native |

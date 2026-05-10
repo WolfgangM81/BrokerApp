@@ -1,0 +1,8 @@
+apiVersion: v2
+name: brokerapp-backup
+description: Nightly DB backup and weekly restore-test CronJobs (ADR-0010)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: brokerapp

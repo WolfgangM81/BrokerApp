@@ -1,0 +1,85 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: brokerapp-restore-test
+  labels:
+    app.kubernetes.io/name: brokerapp-restore-test
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: brokerapp
+spec:
+  schedule: "{{ .Values.schedule.restoreTest }}"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: restore-test
+              image: {{ .Values.backupImage }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  apk add --no-cache age curl coreutils >/dev/null
+                  curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+                  chmod +x /usr/local/bin/mc
+
+                  mc alias set minio "{{ .Values.minio.endpoint }}" \
+                    "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+
+                  LATEST=$(mc ls --json "minio/{{ .Values.minio.bucket }}/{{ .Values.minio.prefix }}/" | \
+                    sed -E 's/.*"key":"([^"]+)".*/\1/' | sort | tail -n1)
+                  test -n "${LATEST}" || (echo "no backup found"; exit 1)
+
+                  mc cp "minio/{{ .Values.minio.bucket }}/{{ .Values.minio.prefix }}/${LATEST}" /tmp/dump.age
+                  age -d -i /age/age.key -o /tmp/dump /tmp/dump.age
+
+                  # Restore into a throwaway database (created fresh each run).
+                  PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+                    -h "{{ .Values.dbServiceName }}" -U "${POSTGRES_USER}" -d postgres \
+                    -c "DROP DATABASE IF EXISTS brokerapp_restore_test; CREATE DATABASE brokerapp_restore_test;"
+                  PGPASSWORD="${POSTGRES_PASSWORD}" pg_restore \
+                    -h "{{ .Values.dbServiceName }}" -U "${POSTGRES_USER}" -d brokerapp_restore_test \
+                    --no-owner --no-privileges /tmp/dump
+
+                  # Smoke queries — fail loudly if main tables are missing.
+                  PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+                    -h "{{ .Values.dbServiceName }}" -U "${POSTGRES_USER}" -d brokerapp_restore_test \
+                    -c "SELECT count(*) FROM app.assets;" \
+                    -c "SELECT count(*) FROM app.users;" \
+                    -c "SELECT count(*) FROM market.bars;"
+
+                  PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+                    -h "{{ .Values.dbServiceName }}" -U "${POSTGRES_USER}" -d postgres \
+                    -c "DROP DATABASE brokerapp_restore_test;"
+
+                  echo "restore-test-ok ${LATEST}"
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.dbSecret }}
+              env:
+                - name: MINIO_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.minio.accessKeySecret }}
+                      key: minio-access-key
+                - name: MINIO_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.minio.accessKeySecret }}
+                      key: minio-secret-key
+              resources: {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: age
+                  mountPath: /age
+                  readOnly: true
+          volumes:
+            - name: age
+              secret:
+                secretName: {{ .Values.minio.accessKeySecret }}
+                items:
+                  - key: age.key
+                    path: age.key

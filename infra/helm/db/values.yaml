@@ -1,0 +1,42 @@
+image:
+  repository: timescale/timescaledb
+  tag: "2.17.0-pg16"
+  pullPolicy: IfNotPresent
+
+storage:
+  storageClass: longhorn
+  size: 50Gi
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 4
+    memory: 8Gi
+
+# The migration Job runs `alembic upgrade head` against the DB and exits.
+migration:
+  image:
+    repository: gitlab.orbiter:5050/wolfgangm81/brokerapp/api
+    tag: latest
+  command:
+    - alembic
+    - -c
+    - /app/services/db/alembic.ini
+    - upgrade
+    - head
+
+envFromSecret: brokerapp-db-secrets
+
+service:
+  port: 5432
+
+podSecurityContext:
+  fsGroup: 999  # postgres
+  runAsNonRoot: true
+  runAsUser: 999
+
+# Optional pgBouncer in front of TimescaleDB (Phase 5+ if needed).
+pgbouncer:
+  enabled: false

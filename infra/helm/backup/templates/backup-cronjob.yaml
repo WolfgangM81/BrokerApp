@@ -1,0 +1,89 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: brokerapp-backup
+  labels:
+    app.kubernetes.io/name: brokerapp-backup
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: brokerapp
+spec:
+  schedule: "{{ .Values.schedule.backup }}"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: dump-encrypt-upload
+              image: {{ .Values.backupImage }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  apk add --no-cache age curl tar coreutils >/dev/null
+                  curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+                  chmod +x /usr/local/bin/mc
+
+                  STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+                  DUMP="/tmp/brokerapp-${STAMP}.dump"
+                  ENCRYPTED="${DUMP}.age"
+
+                  # 1) pg_dump in custom format (compressed binary).
+                  PGPASSWORD="${POSTGRES_PASSWORD}" pg_dump \
+                    -h "{{ .Values.dbServiceName }}" -U "${POSTGRES_USER}" \
+                    -d "${POSTGRES_DB}" --format=custom --file="${DUMP}"
+
+                  # 2) Encrypt with age public key.
+                  age -r "$(cat /age/age.pub)" -o "${ENCRYPTED}" "${DUMP}"
+                  rm -f "${DUMP}"
+
+                  # 3) Upload to MinIO.
+                  mc alias set minio "{{ .Values.minio.endpoint }}" \
+                    "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+                  mc cp "${ENCRYPTED}" \
+                    "minio/{{ .Values.minio.bucket }}/{{ .Values.minio.prefix }}/$(basename "${ENCRYPTED}")"
+
+                  # 4) Apply retention.
+                  CUTOFF="$(date -u -d '{{ .Values.retentionDays }} days ago' +%s)"
+                  mc ls --json "minio/{{ .Values.minio.bucket }}/{{ .Values.minio.prefix }}/" | \
+                    while read line; do
+                      KEY="$(echo "$line" | sed -E 's/.*"key":"([^"]+)".*/\1/')"
+                      LMOD="$(echo "$line" | sed -E 's/.*"lastModified":"([^"]+)".*/\1/')"
+                      LMOD_S="$(date -d "${LMOD}" +%s)"
+                      if [ "${LMOD_S}" -lt "${CUTOFF}" ]; then
+                        mc rm "minio/{{ .Values.minio.bucket }}/{{ .Values.minio.prefix }}/${KEY}" || true
+                      fi
+                    done
+
+                  echo "backup-ok ${ENCRYPTED}"
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.dbSecret }}
+              env:
+                - name: MINIO_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.minio.accessKeySecret }}
+                      key: minio-access-key
+                - name: MINIO_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.minio.accessKeySecret }}
+                      key: minio-secret-key
+              resources: {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: age
+                  mountPath: /age
+                  readOnly: true
+          volumes:
+            - name: age
+              secret:
+                secretName: {{ .Values.minio.accessKeySecret }}
+                items:
+                  - key: age.pub
+                    path: age.pub

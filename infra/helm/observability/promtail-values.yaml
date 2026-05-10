@@ -1,0 +1,16 @@
+config:
+  clients:
+    - url: http://loki-gateway/loki/api/v1/push
+
+  snippets:
+    pipelineStages:
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            request_id: request_id
+            service: logger
+      - labels:
+          level:
+          request_id:
+          service:

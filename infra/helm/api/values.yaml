@@ -62,6 +62,6 @@ securityContext:
     drop: [ALL]
 
 serviceMonitor:
-  enabled: false
+  enabled: true
   interval: 30s
   path: /metrics

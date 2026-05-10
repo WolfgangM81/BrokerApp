@@ -1,0 +1,8 @@
+apiVersion: v2
+name: brokerapp-db
+description: BrokerApp TimescaleDB StatefulSet + Alembic migration init Job
+type: application
+version: 0.1.0
+appVersion: "16"
+maintainers:
+  - name: brokerapp

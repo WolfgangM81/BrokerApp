@@ -1,11 +1,18 @@
-# Umbrella values — overrides per sub-chart go under matching aliases.
-# Real secrets come from k8s secrets created by the GitLab CI pipeline
-# (sourced from Vault — see .gitlab-ci.yml).
+# Umbrella overrides per sub-chart go under the matching alias. Real
+# secrets land via the GitLab CI pipeline (Vault → CI variables → k8s
+# Secret) — see ADR-0010 + .gitlab-ci.yml.
+
+db:
+  enabled: true
+  storage:
+    size: 50Gi
 
 api:
   replicaCount: 2
   image:
     tag: "latest"
+  serviceMonitor:
+    enabled: true
 
 web:
   replicaCount: 2
@@ -15,6 +22,9 @@ web:
 worker:
   replicaCount: 2
   beat:
-    enabled: false
+    enabled: true
   image:
     tag: "latest"
+
+backup:
+  enabled: true

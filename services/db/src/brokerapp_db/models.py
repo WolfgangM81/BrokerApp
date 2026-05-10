@@ -350,3 +350,68 @@ class Backtest(Base):
     metrics: Mapped[dict[str, float]] = mapped_column(JSONB)
     config: Mapped[dict[str, str] | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+# ---------------------------------------------------------------------------
+# Trade journal + paper portfolios (Phase 4+)
+# ---------------------------------------------------------------------------
+
+
+class TradeSide(enum.StrEnum):
+    buy = "buy"
+    sell = "sell"
+
+
+class Trade(Base):
+    """Manual trade-journal entry (real or paper).
+
+    Real trades let users compare model recommendations against their own
+    decisions; paper trades are populated by the paper-portfolio simulator
+    in Phase 6 and have `paper=True`.
+    """
+
+    __tablename__ = "trades"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.assets.id", ondelete="CASCADE"),
+        index=True,
+    )
+    side: Mapped[TradeSide] = mapped_column(Enum(TradeSide, name="trade_side"))
+    quantity: Mapped[Decimal] = mapped_column(Numeric(28, 8))
+    price: Mapped[Decimal] = mapped_column(Numeric(20, 8))
+    traded_at: Mapped[datetime] = mapped_column()
+    notes: Mapped[str | None] = mapped_column(String(2048))
+    paper: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+class PaperPortfolio(Base):
+    __tablename__ = "paper_portfolios"
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_paper_portfolios_user_name"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(64))
+    base_currency: Mapped[str] = mapped_column(String(3), default="EUR")
+    starting_cash: Mapped[Decimal] = mapped_column(Numeric(20, 2))
+    strategy: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)

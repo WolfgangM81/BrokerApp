@@ -1,11 +1,15 @@
 apiVersion: v2
 name: brokerapp
-description: BrokerApp umbrella chart — bundles api, web, and worker
+description: BrokerApp umbrella chart — bundles db, api, web, worker, backup
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.2.0
+appVersion: "0.2.0"
 
 dependencies:
+  - name: brokerapp-db
+    alias: db
+    version: 0.1.0
+    repository: "file://../db"
   - name: brokerapp-api
     alias: api
     version: 0.1.0
@@ -18,3 +22,7 @@ dependencies:
     alias: worker
     version: 0.1.0
     repository: "file://../worker"
+  - name: brokerapp-backup
+    alias: backup
+    version: 0.1.0
+    repository: "file://../backup"
