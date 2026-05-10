@@ -1,9 +1,8 @@
-[project]
-name = "brokerapp"
-version = "0.1.0"
-description = "ML-powered stock forecast and decision-support tool"
-requires-python = ">=3.12,<3.13"
-readme = "README.md"
+# BrokerApp — Python workspace root.
+#
+# This file declares the uv workspace and project-wide Python tooling
+# (ruff, mypy, pytest). It is intentionally *not* a Python package itself —
+# real code lives in apps/api, services/*, and (later) ml/.
 
 [tool.uv.workspace]
 members = [
@@ -11,8 +10,9 @@ members = [
   "services/ingest",
   "services/forecast",
   "services/notifier",
-  "ml",
 ]
+# Note: ml/ is intentionally NOT a workspace member yet. It becomes one in
+# Phase 3 when real modules land under ml/features, ml/models, ml/backtests.
 
 [tool.ruff]
 line-length = 100
@@ -77,7 +77,7 @@ module = [
   "yfinance.*",
   "ccxt.*",
   "vectorbt.*",
-  "pandas_ta.*",
+  "talib.*",
   "darts.*",
   "shap.*",
   "exchange_calendars.*",
