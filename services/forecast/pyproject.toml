@@ -1,0 +1,16 @@
+[project]
+name = "brokerapp-forecast"
+version = "0.1.0"
+description = "BrokerApp ML forecast service (placeholder, fleshed out in Phase 3)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "pydantic>=2.9.2",
+  "structlog>=24.4.0",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/forecast"]
