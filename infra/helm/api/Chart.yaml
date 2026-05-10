@@ -1,0 +1,9 @@
+apiVersion: v2
+name: brokerapp-api
+description: BrokerApp FastAPI gateway
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [brokerapp, api, fastapi]
+maintainers:
+  - name: brokerapp

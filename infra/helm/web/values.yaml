@@ -1,0 +1,56 @@
+replicaCount: 2
+
+image:
+  repository: registry.gitlab.com/wolfgangm81/brokerapp/web
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: gitlab-registry
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  className: traefik
+  host: brokerapp.orbiter
+  tls:
+    enabled: true
+    secretName: brokerapp-web-tls
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+probes:
+  liveness:
+    path: /
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  readiness:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+env:
+  NEXT_PUBLIC_API_URL: https://api.brokerapp.orbiter
+  NODE_ENV: production
+
+envFromSecret: brokerapp-web-secrets
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]

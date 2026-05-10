@@ -1,0 +1,20 @@
+apiVersion: v2
+name: brokerapp
+description: BrokerApp umbrella chart — bundles api, web, and worker
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: brokerapp-api
+    alias: api
+    version: 0.1.0
+    repository: "file://../api"
+  - name: brokerapp-web
+    alias: web
+    version: 0.1.0
+    repository: "file://../web"
+  - name: brokerapp-worker
+    alias: worker
+    version: 0.1.0
+    repository: "file://../worker"

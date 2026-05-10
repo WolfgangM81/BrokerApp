@@ -1,0 +1,45 @@
+replicaCount: 2
+
+image:
+  repository: registry.gitlab.com/wolfgangm81/brokerapp/worker
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: gitlab-registry
+
+concurrency: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+env:
+  CELERYD_LOG_LEVEL: INFO
+
+envFromSecret: brokerapp-worker-secrets
+
+beat:
+  enabled: false  # enable in Phase 1+ when scheduled tasks land
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]

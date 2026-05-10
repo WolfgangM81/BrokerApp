@@ -1,0 +1,67 @@
+replicaCount: 2
+
+image:
+  repository: registry.gitlab.com/wolfgangm81/brokerapp/api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: gitlab-registry
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: traefik
+  host: api.brokerapp.orbiter
+  tls:
+    enabled: true
+    secretName: brokerapp-api-tls
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75
+
+probes:
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 10
+    periodSeconds: 15
+  readiness:
+    path: /readyz
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+env:
+  API_LOG_LEVEL: INFO
+  API_CORS_ORIGINS: https://brokerapp.orbiter
+
+envFromSecret: brokerapp-api-secrets
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  path: /metrics

@@ -1,0 +1,9 @@
+apiVersion: v2
+name: brokerapp-web
+description: BrokerApp Next.js frontend
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [brokerapp, web, nextjs]
+maintainers:
+  - name: brokerapp

@@ -1,0 +1,20 @@
+# Umbrella values — overrides per sub-chart go under matching aliases.
+# Real secrets come from k8s secrets created by the GitLab CI pipeline
+# (sourced from Vault — see .gitlab-ci.yml).
+
+api:
+  replicaCount: 2
+  image:
+    tag: "latest"
+
+web:
+  replicaCount: 2
+  image:
+    tag: "latest"
+
+worker:
+  replicaCount: 2
+  beat:
+    enabled: false
+  image:
+    tag: "latest"
