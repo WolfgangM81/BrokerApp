@@ -102,3 +102,34 @@ export interface ProblemDetail {
   request_id?: string | null;
   errors?: FieldError[] | null;
 }
+
+export type ForecastHorizon = "1h" | "1d" | "5d" | "20d";
+
+export interface ForecastOut {
+  id: string;
+  asset_id: string;
+  model_id: string;
+  as_of: string;
+  horizon: ForecastHorizon;
+  target_time: string;
+  value: string;
+  quantiles: Record<string, number> | null;
+}
+
+export interface BacktestOut {
+  id: string;
+  asset_id: string;
+  model_id: string;
+  horizon: ForecastHorizon;
+  train_start: string;
+  train_end: string;
+  test_start: string;
+  test_end: string;
+  metrics: Record<string, number>;
+}
+
+export interface ForecastRunResponse {
+  asset_id: string;
+  dispatched: boolean;
+  model: string;
+}

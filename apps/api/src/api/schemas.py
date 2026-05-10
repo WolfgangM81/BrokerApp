@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from brokerapp_db import AssetClass, BarGranularity
+from brokerapp_db import AssetClass, BarGranularity, ForecastHorizon
 from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
@@ -117,3 +117,41 @@ class WatchlistUpdate(BaseModel):
 
 class WatchlistMemberAdd(BaseModel):
     asset_id: uuid.UUID
+
+
+# ---------------------------------------------------------------------------
+# Forecasts / Backtests
+# ---------------------------------------------------------------------------
+
+
+class ForecastOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    asset_id: uuid.UUID
+    model_id: uuid.UUID
+    as_of: datetime
+    horizon: ForecastHorizon
+    target_time: datetime
+    value: Decimal
+    quantiles: dict[str, float] | None = None
+
+
+class BacktestOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    asset_id: uuid.UUID
+    model_id: uuid.UUID
+    horizon: ForecastHorizon
+    train_start: datetime
+    train_end: datetime
+    test_start: datetime
+    test_end: datetime
+    metrics: dict[str, float]
+
+
+class ForecastRunResponse(BaseModel):
+    asset_id: uuid.UUID
+    dispatched: bool
+    model: str

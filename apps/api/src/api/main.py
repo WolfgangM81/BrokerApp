@@ -14,7 +14,7 @@ from api.db import dispose_engine
 from api.errors import register_error_handlers
 from api.logging import configure_logging, get_logger
 from api.middleware import RequestContextMiddleware
-from api.routes import assets, bars, health, metrics, watchlists
+from api.routes import assets, bars, forecasts, health, metrics, watchlists
 
 
 @asynccontextmanager
@@ -65,6 +65,7 @@ def create_app() -> FastAPI:
     app.include_router(assets.router)
     app.include_router(bars.router)
     app.include_router(watchlists.router)
+    app.include_router(forecasts.router)
 
     return app
 

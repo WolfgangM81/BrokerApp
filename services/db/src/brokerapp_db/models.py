@@ -225,3 +225,128 @@ class WatchlistAsset(Base):
     added_at: Mapped[datetime] = mapped_column(default=utcnow)
 
     watchlist: Mapped[Watchlist] = relationship(back_populates="members")
+
+
+# ---------------------------------------------------------------------------
+# Forecasts and backtests (Phase 3+)
+# ---------------------------------------------------------------------------
+
+
+class ForecastHorizon(enum.StrEnum):
+    """Multi-horizon forecast outputs returned together by global models."""
+
+    h1 = "1h"
+    d1 = "1d"
+    d5 = "5d"
+    d20 = "20d"
+
+
+class ModelStatus(enum.StrEnum):
+    staging = "staging"
+    production = "production"
+    archived = "archived"
+
+
+class Model(Base):
+    """Registry record for a trained model artifact (full artifact lives in
+    MLflow / MinIO; this row tracks the metadata visible to the API)."""
+
+    __tablename__ = "models"
+    __table_args__ = (UniqueConstraint("name", "version", name="uq_models_name_version"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    name: Mapped[str] = mapped_column(String(64))  # 'naive', 'arima', 'lightgbm', ...
+    version: Mapped[str] = mapped_column(String(64))  # MLflow run id
+    asset_class: Mapped[AssetClass | None] = mapped_column(
+        Enum(AssetClass, name="asset_class"),
+        nullable=True,
+    )
+    status: Mapped[ModelStatus] = mapped_column(
+        Enum(ModelStatus, name="model_status"),
+        default=ModelStatus.staging,
+    )
+    mlflow_uri: Mapped[str | None] = mapped_column(String(255))
+    metrics: Mapped[dict[str, float] | None] = mapped_column(JSONB, nullable=True)
+    feature_schema: Mapped[dict[str, str] | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+class Forecast(Base):
+    """One stored forecast for one (asset, horizon, model, as_of) tuple.
+
+    `value` is the point estimate; `quantiles` carries q10/q50/q90 for
+    confidence-band UIs.
+    """
+
+    __tablename__ = "forecasts"
+    __table_args__ = (
+        UniqueConstraint(
+            "asset_id",
+            "model_id",
+            "as_of",
+            "horizon",
+            name="uq_forecasts_asset_model_asof_horizon",
+        ),
+        Index("ix_forecasts_asset_asof", "asset_id", "as_of"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.assets.id", ondelete="CASCADE"),
+        index=True,
+    )
+    model_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.models.id", ondelete="CASCADE"),
+        index=True,
+    )
+    as_of: Mapped[datetime] = mapped_column()  # the t at which the forecast was made
+    horizon: Mapped[ForecastHorizon] = mapped_column(
+        Enum(ForecastHorizon, name="forecast_horizon"),
+    )
+    target_time: Mapped[datetime] = mapped_column()  # t + horizon
+    value: Mapped[Decimal] = mapped_column(Numeric(20, 8))
+    quantiles: Mapped[dict[str, float] | None] = mapped_column(JSONB, nullable=True)
+    explain: Mapped[dict[str, float] | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+class Backtest(Base):
+    """Result of a walk-forward backtest run."""
+
+    __tablename__ = "backtests"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.assets.id", ondelete="CASCADE"),
+        index=True,
+    )
+    model_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.models.id", ondelete="CASCADE"),
+        index=True,
+    )
+    horizon: Mapped[ForecastHorizon] = mapped_column(
+        Enum(ForecastHorizon, name="forecast_horizon"),
+    )
+    train_start: Mapped[datetime] = mapped_column()
+    train_end: Mapped[datetime] = mapped_column()
+    test_start: Mapped[datetime] = mapped_column()
+    test_end: Mapped[datetime] = mapped_column()
+    metrics: Mapped[dict[str, float]] = mapped_column(JSONB)
+    config: Mapped[dict[str, str] | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)

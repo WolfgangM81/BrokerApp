@@ -9,8 +9,12 @@
 import type {
   AssetCreate,
   AssetOut,
+  BacktestOut,
   BarsResponse,
   BarGranularity,
+  ForecastHorizon,
+  ForecastOut,
+  ForecastRunResponse,
   PageOfAssetOut,
   ProblemDetail,
   WatchlistCreate,
@@ -152,6 +156,23 @@ export class ApiClient {
   removeWatchlistMember(watchlistId: string, assetId: string) {
     return this.request<void>(`/v1/watchlists/${watchlistId}/members/${assetId}`, {
       method: "DELETE",
+    });
+  }
+
+  // --- forecasts / backtests ---------------------------------------------
+
+  listForecasts(assetId: string, params: { horizon?: ForecastHorizon; limit?: number } = {}) {
+    return this.request<ForecastOut[]>(`/v1/assets/${assetId}/forecasts`, { query: params });
+  }
+
+  listBacktests(assetId: string, params: { limit?: number } = {}) {
+    return this.request<BacktestOut[]>(`/v1/assets/${assetId}/backtests`, { query: params });
+  }
+
+  runForecast(assetId: string, model = "lightgbm") {
+    return this.request<ForecastRunResponse>(`/v1/assets/${assetId}/forecasts/run`, {
+      method: "POST",
+      query: { model },
     });
   }
 }

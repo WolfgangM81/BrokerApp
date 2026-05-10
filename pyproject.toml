@@ -7,16 +7,16 @@
 [tool.uv.workspace]
 members = [
   "apps/api",
+  "ml",
   "services/db",
   "services/ingest",
   "services/forecast",
   "services/notifier",
 ]
-# Note: ml/ is intentionally NOT a workspace member yet. It becomes one in
-# Phase 3 when real modules land under ml/features, ml/models, ml/backtests.
 
 [tool.uv.sources]
 brokerapp-db = { workspace = true }
+brokerapp-ml = { workspace = true }
 
 [tool.ruff]
 line-length = 100
