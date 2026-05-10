@@ -1,0 +1,127 @@
+# Local development stack.
+#
+# This is for local dev only. Production deploys via Helm to k8s.
+# See infra/helm/ for cluster manifests.
+#
+# Quick start:
+#   cp .env.example .env
+#   docker compose up -d
+#   docker compose logs -f
+#
+# Override locally with docker-compose.override.yml (gitignored).
+
+name: brokerapp
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:2.17.0-pg16
+    container_name: brokerapp-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brokerapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brokerapp}
+      POSTGRES_DB: ${POSTGRES_DB:-brokerapp}
+      TS_TUNE_MEMORY: 4GB
+      TS_TUNE_NUM_CPUS: 4
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+      - ./infra/docker/timescaledb-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brokerapp} -d ${POSTGRES_DB:-brokerapp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: brokerapp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    container_name: brokerapp-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-brokerapp}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-brokerapp123}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:RELEASE.2024-10-08T09-37-26Z
+    container_name: brokerapp-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD";
+        mc mb -p local/mlflow || true;
+        mc mb -p local/backups || true;
+        mc anonymous set none local/mlflow;
+        echo "MinIO buckets ensured.";
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-brokerapp}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-brokerapp123}
+    restart: "no"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.17.2
+    container_name: brokerapp-mlflow
+    restart: unless-stopped
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-brokerapp}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-brokerapp123}
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://${POSTGRES_USER:-brokerapp}:${POSTGRES_PASSWORD:-brokerapp}@timescaledb:5432/${POSTGRES_DB:-brokerapp}?options=-csearch_path%3Dmlflow
+      --default-artifact-root s3://mlflow/
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: brokerapp-mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+
+volumes:
+  timescaledb-data:
+    driver: local
+  redis-data:
+    driver: local
+  minio-data:
+    driver: local
