@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: registry.gitlab.com/wolfgangm81/brokerapp/worker
+  repository: gitlab.orbiter:5050/wolfgangm81/brokerapp/worker
   pullPolicy: IfNotPresent
   tag: "latest"
 
