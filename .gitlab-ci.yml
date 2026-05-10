@@ -1,0 +1,224 @@
+# BrokerApp CI/CD pipeline.
+#
+# Stages:
+#   lint    — ruff, mypy, eslint, prettier (fast feedback)
+#   test    — pytest, vitest (unit tests)
+#   build   — Docker images for api/web/worker, pushed to GitLab Container Registry
+#   deploy  — helm upgrade against the homelab k8s cluster
+#
+# Rules:
+#   - lint/test always run on MR + main
+#   - build/deploy only on main (and tagged releases later)
+#   - per-service jobs use rules:changes so we don't build everything on every commit
+#
+# Required CI variables (set in GitLab → Settings → CI/CD → Variables):
+#   CI_REGISTRY_USER, CI_REGISTRY_PASSWORD, CI_REGISTRY_IMAGE   (auto-provided)
+#   KUBE_CONFIG                  (base64-encoded kubeconfig for homelab cluster)
+#   VAULT_ADDR, VAULT_TOKEN      (for Vault-sourced secrets — phase 4+)
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  PYTHON_IMAGE: "python:3.12-slim-bookworm"
+  NODE_IMAGE: "node:22-alpine"
+  KANIKO_IMAGE: "gcr.io/kaniko-project/executor:v1.23.2-debug"
+  HELM_IMAGE: "alpine/helm:3.16.2"
+  KUBECTL_IMAGE: "bitnami/kubectl:1.31.2"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+  PNPM_HOME: "$CI_PROJECT_DIR/.cache/pnpm"
+  GIT_DEPTH: "20"
+
+default:
+  interruptible: true
+
+# --- common rule fragments ---
+.on-mr-or-main:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+.only-main:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ============================================================================
+# LINT
+# ============================================================================
+
+lint:python:
+  stage: lint
+  image: $PYTHON_IMAGE
+  extends: .on-mr-or-main
+  cache:
+    key:
+      files: [pyproject.toml]
+    paths: [.cache/uv, .cache/pip]
+  before_script:
+    - pip install --root-user-action=ignore uv
+    - uv venv
+    - source .venv/bin/activate
+    - uv pip install ruff mypy
+  script:
+    - ruff check .
+    - ruff format --check .
+
+lint:typescript:
+  stage: lint
+  image: $NODE_IMAGE
+  extends: .on-mr-or-main
+  cache:
+    key:
+      files: [pnpm-lock.yaml]
+    paths: [.cache/pnpm]
+  before_script:
+    - corepack enable
+    - pnpm install --frozen-lockfile || pnpm install
+  script:
+    - pnpm -r run lint
+    - pnpm format:check
+
+# ============================================================================
+# TEST
+# ============================================================================
+
+test:api:
+  stage: test
+  image: $PYTHON_IMAGE
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [apps/api/**/*, pyproject.toml]
+    - if: $CI_COMMIT_BRANCH == "main"
+  before_script:
+    - pip install --root-user-action=ignore uv
+    - uv venv
+    - source .venv/bin/activate
+    - uv pip install -e "apps/api[dev]"
+  script:
+    - cd apps/api
+    - pytest -ra --cov=src/api --cov-report=term-missing --cov-report=xml
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: apps/api/coverage.xml
+    paths:
+      - apps/api/coverage.xml
+    expire_in: 1 week
+
+test:ingest:
+  stage: test
+  image: $PYTHON_IMAGE
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [services/ingest/**/*, pyproject.toml]
+    - if: $CI_COMMIT_BRANCH == "main"
+  before_script:
+    - pip install --root-user-action=ignore uv
+    - uv venv
+    - source .venv/bin/activate
+    - uv pip install -e "services/ingest[dev]"
+  script:
+    - cd services/ingest
+    - pytest -ra
+
+test:web:
+  stage: test
+  image: $NODE_IMAGE
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [apps/web/**/*, packages/**/*, pnpm-lock.yaml]
+    - if: $CI_COMMIT_BRANCH == "main"
+  before_script:
+    - corepack enable
+    - pnpm install --frozen-lockfile || pnpm install
+  script:
+    - pnpm --filter @brokerapp/web run typecheck
+    - pnpm --filter @brokerapp/web run test
+
+# ============================================================================
+# BUILD (only on main; build all images via Kaniko)
+# ============================================================================
+
+.build-image:
+  stage: build
+  image:
+    name: $KANIKO_IMAGE
+    entrypoint: [""]
+  extends: .only-main
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - |
+      cat > /kaniko/.docker/config.json <<EOF
+      {
+        "auths": {
+          "$CI_REGISTRY": {
+            "username": "$CI_REGISTRY_USER",
+            "password": "$CI_REGISTRY_PASSWORD"
+          }
+        }
+      }
+      EOF
+
+build:api:
+  extends: .build-image
+  script:
+    - /kaniko/executor
+        --context "$CI_PROJECT_DIR"
+        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.api"
+        --destination "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA"
+        --destination "$CI_REGISTRY_IMAGE/api:latest"
+
+build:web:
+  extends: .build-image
+  script:
+    - /kaniko/executor
+        --context "$CI_PROJECT_DIR"
+        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.web"
+        --destination "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHORT_SHA"
+        --destination "$CI_REGISTRY_IMAGE/web:latest"
+
+build:worker:
+  extends: .build-image
+  script:
+    - /kaniko/executor
+        --context "$CI_PROJECT_DIR"
+        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.worker"
+        --destination "$CI_REGISTRY_IMAGE/worker:$CI_COMMIT_SHORT_SHA"
+        --destination "$CI_REGISTRY_IMAGE/worker:latest"
+
+# ============================================================================
+# DEPLOY (only on main; helm upgrade)
+# ============================================================================
+
+deploy:k8s:
+  stage: deploy
+  image: $HELM_IMAGE
+  extends: .only-main
+  needs:
+    - build:api
+    - build:web
+    - build:worker
+  before_script:
+    - apk add --no-cache bash gettext
+    - mkdir -p ~/.kube && echo "$KUBE_CONFIG" | base64 -d > ~/.kube/config
+    - chmod 600 ~/.kube/config
+  script:
+    - helm upgrade --install brokerapp infra/helm/umbrella
+        --namespace brokerapp
+        --create-namespace
+        --set api.image.tag=$CI_COMMIT_SHORT_SHA
+        --set web.image.tag=$CI_COMMIT_SHORT_SHA
+        --set worker.image.tag=$CI_COMMIT_SHORT_SHA
+        --wait --timeout 5m
+  environment:
+    name: production
+    url: https://brokerapp.orbiter
