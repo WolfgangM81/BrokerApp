@@ -1,0 +1,66 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommitsDisabled",
+    ":dependencyDashboard",
+    "schedule:weekends"
+  ],
+  "timezone": "Europe/Berlin",
+  "labels": ["deps"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on the first day of the month"]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": false,
+      "groupName": "patches"
+    },
+    {
+      "matchPackagePatterns": ["^@types/", "^types-"],
+      "groupName": "typings",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "groupName": "dockerfile base images"
+    },
+    {
+      "matchManagers": ["helm-values", "helmv3"],
+      "groupName": "helm charts"
+    },
+    {
+      "matchPackageNames": ["python"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["gitlabci"],
+      "groupName": "gitlab-ci tooling"
+    },
+    {
+      "matchPackageNames": [
+        "fastapi",
+        "pydantic",
+        "sqlalchemy",
+        "next",
+        "react",
+        "react-dom"
+      ],
+      "groupName": "framework majors",
+      "matchUpdateTypes": ["major"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "pip-compile": {
+    "fileMatch": ["(^|/)requirements.*\\.txt$"]
+  }
+}

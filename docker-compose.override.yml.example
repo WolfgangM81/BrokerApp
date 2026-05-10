@@ -1,0 +1,22 @@
+# Local development overrides.
+#
+# Copy to docker-compose.override.yml to customize your local stack without
+# touching docker-compose.yml. Docker Compose merges this automatically.
+#
+# This file is gitignored once it's named docker-compose.override.yml.
+
+services:
+  # Expose TimescaleDB on a non-default port to avoid clashing with an
+  # existing local Postgres.
+  # timescaledb:
+  #   ports:
+  #     - "5433:5432"
+
+  # Reduce memory pressure during dev:
+  # redis:
+  #   command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+
+  # Mount a host directory into MinIO for inspection:
+  # minio:
+  #   volumes:
+  #     - ./.data/minio:/data
