@@ -5,8 +5,15 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, RedisDsn
+from pydantic import Field, PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Known-insecure defaults. The dev compose stack uses these; any non-dev
+# environment that still has them is misconfigured and must fail loudly at
+# startup rather than silently exposing a default-credential database.
+_INSECURE_DEFAULTS = {
+    "postgres_password": "brokerapp",
+}
 
 
 class Settings(BaseSettings):
@@ -39,6 +46,23 @@ class Settings(BaseSettings):
     authentik_issuer: str = Field(default="")
     authentik_audience: str = Field(default="brokerapp")
     authentik_jwks_url: str = Field(default="")
+
+    @model_validator(mode="after")
+    def _reject_insecure_defaults_in_non_dev(self) -> Settings:
+        """Refuse to start in staging/production with dev-default secrets."""
+        if self.environment == "dev":
+            return self
+        offending: list[str] = []
+        for attr, default in _INSECURE_DEFAULTS.items():
+            if getattr(self, attr) == default:
+                offending.append(attr)
+        if offending:
+            joined = ", ".join(offending)
+            raise ValueError(
+                f"Refusing to start in environment={self.environment!r} with "
+                f"insecure default value(s) for: {joined}. Override via env vars."
+            )
+        return self
 
     @property
     def database_url(self) -> PostgresDsn:
