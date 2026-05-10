@@ -17,6 +17,24 @@ COPY --from=ghcr.io/astral-sh/uv:0.4.30 /uv /usr/local/bin/uv
 
 # ---------- builder ----------
 FROM base AS builder
+
+# Build deps: TA-Lib C library headers + build toolchain.
+# See ADR-0007 for why we use TA-Lib (vs pandas-ta / ta).
+ARG TALIB_VERSION=0.6.4
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential \
+      ca-certificates \
+      curl \
+    && curl -fsSL "https://github.com/ta-lib/ta-lib/releases/download/v${TALIB_VERSION}/ta-lib-${TALIB_VERSION}-src.tar.gz" -o /tmp/ta-lib.tgz \
+    && tar -xzf /tmp/ta-lib.tgz -C /tmp \
+    && cd "/tmp/ta-lib-${TALIB_VERSION}" \
+    && ./configure --prefix=/usr/local \
+    && make -j"$(nproc)" \
+    && make install \
+    && ldconfig \
+    && rm -rf /tmp/ta-lib* \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pyproject.toml /app/pyproject.toml
 COPY services/ingest/pyproject.toml /app/services/ingest/pyproject.toml
 COPY services/ingest/src /app/services/ingest/src
@@ -35,6 +53,11 @@ WORKDIR /app
 
 RUN groupadd --system --gid 1000 brokerapp && \
     useradd  --system --uid 1000 --gid brokerapp --no-create-home brokerapp
+
+# Runtime needs the TA-Lib shared library (no headers / build tools).
+COPY --from=builder /usr/local/lib/libta* /usr/local/lib/
+COPY --from=builder /usr/local/lib/pkgconfig/ta-lib.pc /usr/local/lib/pkgconfig/ta-lib.pc
+RUN ldconfig
 
 COPY --from=builder /app/.venv /app/.venv
 COPY services/ingest/src /app/src

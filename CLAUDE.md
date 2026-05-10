@@ -58,6 +58,12 @@ See [`README.md`](./README.md) for the table. Key versions:
 - `structlog` for logging — never `print`, never plain `logging` in app code.
 - Pydantic v2 models for all I/O boundaries.
 - SQLAlchemy 2.0 style (`select(...)`, `session.execute(...)`).
+- **DataFrames: Polars is primary** (see ADR-0007). Pandas only at library
+  boundaries (yfinance / ccxt input, sklearn / LightGBM input). Convert at
+  the boundary, never propagate pandas frames through in-house code.
+- **Indicators: TA-Lib** (see ADR-0007). Call via numpy arrays
+  (`talib.SMA(close.to_numpy(), 20)`); thin Polars wrappers live in
+  `ml/features/indicators.py` (Phase 3+).
 
 ### TypeScript
 - Format: `prettier`. Lint: `eslint`.

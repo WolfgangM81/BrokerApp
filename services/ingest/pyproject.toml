@@ -14,9 +14,16 @@ dependencies = [
   "exchange-calendars>=4.5.6",
   "yfinance>=0.2.48",
   "ccxt>=4.4.20",
-  "pandas>=2.2.3",
+  # DataFrame strategy (see ADR-0007):
+  # - Polars is our primary DataFrame library.
+  # - Pandas is pulled in transitively by yfinance/ccxt and used only at
+  #   library boundaries; never as the canonical in-house format.
   "polars>=1.13.1",
+  "pandas>=2.2.3",
   "pyarrow>=18.0.0",
+  # Technical-analysis indicators (ADR-0007). Requires libta-lib-dev on
+  # build hosts — see infra/docker/Dockerfile.worker.
+  "ta-lib>=0.5.1",
 ]
 
 [project.optional-dependencies]

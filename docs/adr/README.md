@@ -11,3 +11,4 @@ for the meta-process.
 | [0004](./0004-authentik-oidc-for-auth.md) | Authentik (OIDC) for authentication | Accepted |
 | [0005](./0005-cpu-only-ml-strategy.md) | CPU-only ML strategy | Accepted |
 | [0006](./0006-walk-forward-validation-mandatory.md) | Walk-forward validation is mandatory | Accepted |
+| [0007](./0007-dataframes-and-ta-lib.md) | Polars as primary DataFrame; TA-Lib for indicators | Accepted |
