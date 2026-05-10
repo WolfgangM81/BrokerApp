@@ -82,6 +82,49 @@ lint:typescript:
     - pnpm -r run lint
     - pnpm format:check
 
+lint:helm:
+  stage: lint
+  image: $HELM_IMAGE
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [infra/helm/**/*]
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - helm lint infra/helm/api
+    - helm lint infra/helm/web
+    - helm lint infra/helm/worker
+    - helm dependency update infra/helm/umbrella
+    - helm lint infra/helm/umbrella
+
+validate:k8s:
+  # Render the umbrella chart and validate every resulting manifest against
+  # the upstream Kubernetes schemas. Catches malformed resources before deploy.
+  stage: lint
+  image: alpine:3.20
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [infra/helm/**/*]
+    - if: $CI_COMMIT_BRANCH == "main"
+  variables:
+    HELM_VERSION: "3.16.2"
+    KUBECONFORM_VERSION: "0.6.7"
+    K8S_VERSION: "1.31.0"
+  before_script:
+    - apk add --no-cache curl tar
+    - curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | tar xz -C /tmp
+    - mv /tmp/linux-amd64/helm /usr/local/bin/helm
+    - curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" | tar xz -C /usr/local/bin
+  script:
+    - helm dependency update infra/helm/umbrella
+    - helm template brokerapp infra/helm/umbrella --namespace brokerapp > rendered.yaml
+    - kubeconform -strict -kubernetes-version "${K8S_VERSION}"
+        -summary -verbose
+        -schema-location default
+        -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+        rendered.yaml
+
 # ============================================================================
 # TEST
 # ============================================================================
