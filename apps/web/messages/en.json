@@ -1,0 +1,66 @@
+{
+  "app": {
+    "name": "BrokerApp",
+    "tagline": "ML-powered market analysis and decision support",
+    "disclaimer": "Not investment advice. Forecasts are uncertain — models can be wrong."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "watchlists": "Watchlists",
+    "assets": "Assets",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "language": "Language",
+    "theme": "Theme"
+  },
+  "common": {
+    "loading": "Loading …",
+    "error": "Error",
+    "tryAgain": "Try again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "search": "Search",
+    "empty": "No entries"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}.",
+    "openWatchlists": "Open watchlists",
+    "trackedAssets": "Tracked assets",
+    "recentForecasts": "Recent forecasts"
+  },
+  "watchlists": {
+    "title": "Watchlists",
+    "create": "Create watchlist",
+    "createDialog": {
+      "title": "New watchlist",
+      "namePlaceholder": "e.g. Tech stocks",
+      "descriptionPlaceholder": "Optional description"
+    },
+    "members": "Members",
+    "addMember": "Add asset",
+    "addMemberHint": "Adding triggers a historical backfill of bars.",
+    "removeMemberConfirm": "Remove asset from this watchlist?",
+    "deleteConfirm": "Delete watchlist and all memberships?",
+    "empty": "No watchlists yet — create one to start tracking assets."
+  },
+  "assets": {
+    "title": "Asset",
+    "symbol": "Symbol",
+    "class": "Class",
+    "exchange": "Exchange",
+    "currency": "Currency",
+    "addToWatchlist": "Add to watchlist",
+    "noBars": "No bar data available yet.",
+    "granularity": "Granularity",
+    "from": "From",
+    "to": "To"
+  },
+  "auth": {
+    "signInWith": "Sign in with Authentik",
+    "signedInAs": "Signed in as {email}",
+    "sessionExpired": "Session expired — please sign in again."
+  }
+}

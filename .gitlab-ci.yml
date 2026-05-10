@@ -82,6 +82,37 @@ lint:typescript:
     - pnpm -r run lint
     - pnpm format:check
 
+generate:api-client:
+  # Re-render packages/api-client/src/schema.ts from the live OpenAPI spec
+  # produced by the API and fail if the committed file drifts.
+  stage: lint
+  image: $NODE_IMAGE
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [apps/api/**/*, packages/api-client/**/*]
+    - if: $CI_COMMIT_BRANCH == "main"
+  services:
+    - name: timescale/timescaledb:2.17.0-pg16
+      alias: postgres
+      command: ["postgres", "-c", "shared_preload_libraries=timescaledb"]
+  variables:
+    POSTGRES_USER: brokerapp
+    POSTGRES_PASSWORD: brokerapp
+    POSTGRES_DB: brokerapp
+    DATABASE_URL: "postgresql+asyncpg://brokerapp:brokerapp@postgres:5432/brokerapp"
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends curl
+    - curl -fsSL https://astral.sh/uv/install.sh | sh
+    - export PATH="/root/.local/bin:$PATH"
+    - uv sync --all-extras
+    - corepack enable
+    - pnpm install --frozen-lockfile || pnpm install
+  script:
+    - uv run --package brokerapp-api python -c "from api.main import app; import json; open('apps/api/openapi.json','w').write(json.dumps(app.openapi(), indent=2))"
+    - pnpm --filter @brokerapp/api-client generate
+    - git diff --exit-code packages/api-client/src/schema.ts || (echo 'API client drift — regenerate locally: pnpm --filter @brokerapp/api-client generate'; exit 1)
+
 lint:helm:
   stage: lint
   image: $HELM_IMAGE

@@ -85,9 +85,9 @@ See [`README.md`](./README.md) for the table. Key versions:
 ## Phase plan
 
 Phase 0: Foundation — repo skeleton, tooling, CI/CD bones. ✅
-Phase 1 (current): Data backbone — schemas, ingest, market calendars,
-  versioned API, Authentik auth.
-Phase 2: UI + Auth — Next.js + Authentik OIDC + watchlists/charts.
+Phase 1: Data backbone — schemas, ingest, market calendars,
+  versioned API, Authentik auth. ✅
+Phase 2 (current): UI + Auth — Next.js + Authentik OIDC + watchlists/charts.
 Phase 3: Forecast baseline — Naive, ARIMA, LightGBM, walk-forward backtest.
 Phase 4: Operations — Helm to cluster, monitoring, alerts, backups.
 Phase 5: Advanced ML — TFT/N-HiTS, sentiment, macro, ensembles, SHAP, drift.

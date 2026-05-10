@@ -1,0 +1,66 @@
+{
+  "app": {
+    "name": "BrokerApp",
+    "tagline": "ML-gestützte Marktanalyse und Entscheidungshilfe",
+    "disclaimer": "Keine Anlageberatung. Prognosen sind unsicher — Modelle können falsch liegen."
+  },
+  "nav": {
+    "dashboard": "Übersicht",
+    "watchlists": "Watchlists",
+    "assets": "Assets",
+    "signOut": "Abmelden",
+    "signIn": "Anmelden",
+    "language": "Sprache",
+    "theme": "Design"
+  },
+  "common": {
+    "loading": "Lade …",
+    "error": "Fehler",
+    "tryAgain": "Erneut versuchen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "create": "Anlegen",
+    "search": "Suchen",
+    "empty": "Keine Einträge"
+  },
+  "dashboard": {
+    "title": "Übersicht",
+    "welcome": "Willkommen zurück, {name}.",
+    "openWatchlists": "Offene Watchlists",
+    "trackedAssets": "Beobachtete Assets",
+    "recentForecasts": "Letzte Prognosen"
+  },
+  "watchlists": {
+    "title": "Watchlists",
+    "create": "Watchlist anlegen",
+    "createDialog": {
+      "title": "Neue Watchlist",
+      "namePlaceholder": "z.B. Tech-Aktien",
+      "descriptionPlaceholder": "Optionale Beschreibung"
+    },
+    "members": "Mitglieder",
+    "addMember": "Asset hinzufügen",
+    "addMemberHint": "Beim Hinzufügen wird der historische Kursverlauf gezogen.",
+    "removeMemberConfirm": "Asset von dieser Watchlist entfernen?",
+    "deleteConfirm": "Watchlist und alle Mitgliedschaften löschen?",
+    "empty": "Noch keine Watchlists — lege eine an, um Assets zu beobachten."
+  },
+  "assets": {
+    "title": "Asset",
+    "symbol": "Symbol",
+    "class": "Klasse",
+    "exchange": "Börse",
+    "currency": "Währung",
+    "addToWatchlist": "Zu Watchlist hinzufügen",
+    "noBars": "Noch keine Kursdaten verfügbar.",
+    "granularity": "Auflösung",
+    "from": "Von",
+    "to": "Bis"
+  },
+  "auth": {
+    "signInWith": "Mit Authentik anmelden",
+    "signedInAs": "Angemeldet als {email}",
+    "sessionExpired": "Sitzung abgelaufen — bitte neu anmelden."
+  }
+}
