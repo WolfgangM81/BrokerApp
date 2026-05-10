@@ -89,8 +89,8 @@ Phase 1: Data backbone — schemas, ingest, market calendars,
   versioned API, Authentik auth. ✅
 Phase 2: UI + Auth — Next.js + Authentik OIDC + watchlists/charts. ✅
 Phase 3: Forecast baseline — Naive, ARIMA, LightGBM, walk-forward backtest. ✅
-Phase 4 (current): Operations — Helm to cluster, monitoring, alerts, backups.
-Phase 5: Advanced ML — TFT/N-HiTS, sentiment, macro, ensembles, SHAP, drift.
+Phase 4: Operations — Helm to cluster, monitoring, alerts, backups. ✅
+Phase 5 (current): Advanced ML — TFT/N-HiTS, sentiment, macro, ensembles, SHAP, drift.
 Phase 6: Risk + Portfolio — position sizing, multi-asset risk metrics.
 Phase 7: Mobile (when needed) — Expo/React Native.
 
