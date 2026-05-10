@@ -220,8 +220,8 @@ GitLab CI/CD:
 | **2** | UI + Auth — Next.js + Authentik OIDC end-to-end ✅ |
 | **3** | Forecast baseline + walk-forward backtest, UI integration ✅ |
 | **4** | Operations — Helm to cluster, monitoring, alerting, backups ✅ |
-| **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP (current) |
-| **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish |
+| **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP ✅ |
+| **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish (current) |
 | **7** | Mobile (when needed) — Expo / React Native |
 
 We do not skip phases. Each phase ends with an explicit acceptance check.
