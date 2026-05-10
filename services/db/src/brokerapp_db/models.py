@@ -1,0 +1,227 @@
+"""Domain models.
+
+All times stored in UTC (see ADR-0011). Bars are partitioned via a
+TimescaleDB hypertable created by the initial migration's post-processing
+hook (see ADR-0001 + migrations/env.py).
+"""
+
+from __future__ import annotations
+
+import enum
+import uuid
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import (
+    BigInteger,
+    Enum,
+    ForeignKey,
+    Index,
+    Numeric,
+    String,
+    UniqueConstraint,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from brokerapp_db.base import Base, utcnow
+
+
+class AssetClass(enum.StrEnum):
+    """Top-level asset taxonomy. Drives ingest adapter selection + calendar."""
+
+    stock = "stock"
+    etf = "etf"
+    index = "index"
+    crypto = "crypto"
+    fx = "fx"
+    commodity = "commodity"
+
+
+class BarGranularity(enum.StrEnum):
+    """Bar granularity. The hypertable stores 5m as base; longer bars are
+    served via continuous aggregates added in a later migration."""
+
+    m5 = "5m"
+    m15 = "15m"
+    h1 = "1h"
+    d1 = "1d"
+
+
+# ---------------------------------------------------------------------------
+# users
+# ---------------------------------------------------------------------------
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    authentik_sub: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    display_name: Mapped[str | None] = mapped_column(String(255))
+    base_currency: Mapped[str] = mapped_column(String(3), default="EUR")
+    locale: Mapped[str] = mapped_column(String(8), default="de")
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
+
+    watchlists: Mapped[list[Watchlist]] = relationship(
+        back_populates="owner",
+        cascade="all, delete-orphan",
+    )
+
+
+# ---------------------------------------------------------------------------
+# assets
+# ---------------------------------------------------------------------------
+
+
+class Asset(Base):
+    __tablename__ = "assets"
+    __table_args__ = (
+        UniqueConstraint(
+            "symbol",
+            "asset_class",
+            "source",
+            name="uq_assets_symbol_class_source",
+        ),
+        Index("ix_assets_asset_class", "asset_class"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    name: Mapped[str | None] = mapped_column(String(255))
+    asset_class: Mapped[AssetClass] = mapped_column(Enum(AssetClass, name="asset_class"))
+    exchange: Mapped[str | None] = mapped_column(String(32))
+    currency: Mapped[str | None] = mapped_column(String(3))
+    source: Mapped[str] = mapped_column(String(32))  # yfinance / ccxt / ...
+    source_symbol: Mapped[str | None] = mapped_column(String(64))
+    # Calendar identifier accepted by exchange_calendars (e.g. "XNYS",
+    # "XETR", "24/7" for crypto).
+    calendar: Mapped[str] = mapped_column(String(16), default="XNYS")
+    enabled: Mapped[bool] = mapped_column(default=True)
+    extra: Mapped[dict[str, str] | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
+
+
+# ---------------------------------------------------------------------------
+# bars (hypertable — see migration)
+# ---------------------------------------------------------------------------
+
+
+class Bar(Base):
+    __tablename__ = "bars"
+    __table_args__ = (
+        # Composite PK: (asset_id, time, granularity). Hypertable partition
+        # column is `time`; uniqueness enforces idempotent ingest.
+        UniqueConstraint(
+            "asset_id",
+            "time",
+            "granularity",
+            name="uq_bars_asset_time_granularity",
+        ),
+        Index("ix_bars_asset_time", "asset_id", "time"),
+        # Bars live in the `market` schema so they can be backed up / pruned
+        # independently from app metadata. The `info["timescale"]` block is
+        # consumed by migrations/env.py to emit `create_hypertable(...)`.
+        {
+            "schema": "market",
+            "info": {
+                "timescale": {
+                    "hypertable": {
+                        "time_column_name": "time",
+                        "chunk_time_interval": "INTERVAL '7 days'",
+                    },
+                },
+            },
+        },
+    )
+
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.assets.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    time: Mapped[datetime] = mapped_column(primary_key=True)
+    granularity: Mapped[BarGranularity] = mapped_column(
+        Enum(BarGranularity, name="bar_granularity"),
+        primary_key=True,
+    )
+    open: Mapped[Decimal] = mapped_column(Numeric(20, 8))
+    high: Mapped[Decimal] = mapped_column(Numeric(20, 8))
+    low: Mapped[Decimal] = mapped_column(Numeric(20, 8))
+    close: Mapped[Decimal] = mapped_column(Numeric(20, 8))
+    volume: Mapped[Decimal | None] = mapped_column(Numeric(28, 8))
+    # Adjusted close (split/dividend-aware) where the source provides it.
+    adj_close: Mapped[Decimal | None] = mapped_column(Numeric(20, 8))
+    # Source attribution per row to support multi-source reconciliation.
+    source: Mapped[str] = mapped_column(String(32))
+    ingested_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+
+# ---------------------------------------------------------------------------
+# watchlists
+# ---------------------------------------------------------------------------
+
+
+class Watchlist(Base):
+    __tablename__ = "watchlists"
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_watchlists_user_name"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(64))
+    description: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
+
+    owner: Mapped[User] = relationship(back_populates="watchlists")
+    members: Mapped[list[WatchlistAsset]] = relationship(
+        back_populates="watchlist",
+        cascade="all, delete-orphan",
+    )
+
+
+class WatchlistAsset(Base):
+    __tablename__ = "watchlist_assets"
+    __table_args__ = (
+        UniqueConstraint(
+            "watchlist_id",
+            "asset_id",
+            name="uq_watchlist_assets_watchlist_asset",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    watchlist_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.watchlists.id", ondelete="CASCADE"),
+        index=True,
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("app.assets.id", ondelete="CASCADE"),
+        index=True,
+    )
+    added_at: Mapped[datetime] = mapped_column(default=utcnow)
+
+    watchlist: Mapped[Watchlist] = relationship(back_populates="members")

@@ -10,7 +10,11 @@ and risk-aware decision metrics.
 
 ## Status
 
-**Phase 0 — Foundation.** The repo skeleton is in place. Nothing is shipped yet.
+**Phase 1 — Data backbone.** SQLAlchemy models, Alembic migrations
+(TimescaleDB hypertable), Authentik-OIDC auth, RFC 7807 errors,
+`/v1/assets`, `/v1/assets/{id}/bars`, `/v1/watchlists` (member-add
+triggers Celery backfill), yfinance + ccxt adapters, exchange-calendar
+gating, idempotent upserts. Phase 0 (foundation) is shipped.
 
 ## Architecture (high-level)
 

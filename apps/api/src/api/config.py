@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, RedisDsn, model_validator
+from pydantic import Field, RedisDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Known-insecure defaults. The dev compose stack uses these; any non-dev
@@ -46,6 +46,17 @@ class Settings(BaseSettings):
     authentik_issuer: str = Field(default="")
     authentik_audience: str = Field(default="brokerapp")
     authentik_jwks_url: str = Field(default="")
+    # Authentik group claim → role mapping. JWT 'groups' entries that
+    # contain any of these substrings unlock the corresponding role.
+    authentik_admin_group: str = Field(default="brokerapp-admins")
+
+    # Shared secret used by services/ingest to call internal API endpoints
+    # (see ADR notes in 0xxx — Worker → API authentication).
+    internal_token: str = Field(default="")
+
+    # Default historical backfill window when a new asset is added to any
+    # watchlist (years).
+    backfill_years: int = Field(default=5)
 
     @model_validator(mode="after")
     def _reject_insecure_defaults_in_non_dev(self) -> Settings:
@@ -65,9 +76,16 @@ class Settings(BaseSettings):
         return self
 
     @property
-    def database_url(self) -> PostgresDsn:
-        return PostgresDsn(
+    def database_url(self) -> str:
+        return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
+            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
+    @property
+    def sync_database_url(self) -> str:
+        return (
+            f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 

@@ -7,12 +7,16 @@
 [tool.uv.workspace]
 members = [
   "apps/api",
+  "services/db",
   "services/ingest",
   "services/forecast",
   "services/notifier",
 ]
 # Note: ml/ is intentionally NOT a workspace member yet. It becomes one in
 # Phase 3 when real modules land under ml/features, ml/models, ml/backtests.
+
+[tool.uv.sources]
+brokerapp-db = { workspace = true }
 
 [tool.ruff]
 line-length = 100
@@ -50,8 +54,19 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S", "PLR2004"]
+"**/tests/**" = ["S", "PLR2004", "PLC0415"]
 "**/conftest.py" = ["S"]
+# FastAPI route handlers use Depends(...) and Query(...) in argument
+# defaults — that is the documented idiom, not a B008 bug.
+"**/routes/**" = ["B008"]
+# Lazy / cached engine and session-factory module-level singletons live
+# behind `global` updates; that's the recommended pattern for our case
+# and the PLW0602/PLW0603 warnings are noise.
+"**/db.py" = ["PLW0602", "PLW0603"]
+"apps/api/src/api/auth.py" = ["PLW0603"]
+# Alembic migrations have to keep their generated boilerplate intact;
+# don't punish them for unused imports / orderings.
+"services/db/migrations/**" = ["F401", "I001", "ARG001", "PLR2004"]
 
 [tool.ruff.format]
 quote-style = "double"

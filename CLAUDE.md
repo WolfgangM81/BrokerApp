@@ -84,17 +84,36 @@ See [`README.md`](./README.md) for the table. Key versions:
 
 ## Phase plan
 
-Phase 0 (current): Foundation — repo skeleton, tooling, CI/CD bones.
-Phase 1: Data backbone — schemas, ingest, market calendars.
-Phase 2: UI + Auth — Next.js + Authentik OIDC.
+Phase 0: Foundation — repo skeleton, tooling, CI/CD bones. ✅
+Phase 1 (current): Data backbone — schemas, ingest, market calendars,
+  versioned API, Authentik auth.
+Phase 2: UI + Auth — Next.js + Authentik OIDC + watchlists/charts.
 Phase 3: Forecast baseline — Naive, ARIMA, LightGBM, walk-forward backtest.
-Phase 4: Operations — Helm charts to cluster, monitoring, alerts, backups.
+Phase 4: Operations — Helm to cluster, monitoring, alerts, backups.
 Phase 5: Advanced ML — TFT/N-HiTS, sentiment, macro, ensembles, SHAP, drift.
 Phase 6: Risk + Portfolio — position sizing, multi-asset risk metrics.
 Phase 7: Mobile (when needed) — Expo/React Native.
 
 Stay within the current phase unless explicitly told otherwise. Do not write
-TFT code in Phase 0. Do not skip Operations to chase ML features.
+TFT code in Phase 1. Do not skip Operations to chase ML features.
+
+## Phase-1 cheat sheet (for fast onboarding)
+
+- `services/db/` is the shared SQLAlchemy package. Both `apps/api` (async)
+  and `services/ingest` (sync) depend on it. Don't define models elsewhere.
+- All API routes live under `/v1/...`. Health, metrics, OpenAPI live at
+  the root.
+- Errors: raise `APIError(...)` or use the helpers (`not_found`,
+  `conflict`, …) — they produce RFC 7807 Problem responses (ADR-0008).
+- Auth dependencies: `current_user` (JWT against Authentik JWKS),
+  `require_admin` (Authentik group), `require_worker` (internal token).
+- Pagination: cursor-based, `Page[T]` + `encode_cursor` / `decode_cursor`.
+- Bars schema: hypertable in `market.bars`, primary key
+  `(asset_id, time, granularity)`. Idempotency = unique constraint.
+- Asset → adapter mapping lives in `services/ingest/src/ingest/sources/
+  registry.py`. New source = new module + register here.
+- Adding to a watchlist triggers `ingest.backfill_asset` via Celery
+  (`_trigger_backfill` in routes/watchlists.py).
 
 ## Things to avoid
 
