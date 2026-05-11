@@ -34,8 +34,20 @@ before cluster bring-up.** What ships:
   `auth()` guards on every page, DB integration test suite, audit fixes
 
 The repo is ready for the first `helm upgrade` against the homelab
-cluster. See [`docs/runbooks/restore.md`](docs/runbooks/restore.md)
-and the ADRs in [`docs/adr/`](docs/adr/).
+cluster.
+
+## Installation
+
+Start at [`docs/runbooks/00-overview.md`](docs/runbooks/00-overview.md) —
+the runbook walks from three blank Lenovo m75q boxes to a running
+`https://brokerapp.orbiter`. The in-cluster pieces (Longhorn,
+cert-manager, kube-prometheus-stack, Loki, MinIO) are installed by
+the idempotent `infra/scripts/bootstrap-cluster.sh`; UI-clicks-only
+steps (Authentik OIDC apps, Vault secrets, GitLab CI variables) are
+documented step-by-step with exact field names.
+
+See also [`docs/runbooks/restore.md`](docs/runbooks/restore.md) and
+the ADRs in [`docs/adr/`](docs/adr/).
 
 ## Architecture (high-level)
 
