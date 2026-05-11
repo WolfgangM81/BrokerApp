@@ -57,20 +57,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "worker.fullname" . }}-beat
-  labels:
-    {{- include "worker.labels" . | nindent 4 }}
-    app.kubernetes.io/component: beat
+  labels: {{- include "worker.beatLabels" . | nindent 4 }}
 spec:
   replicas: 1  # Beat must be a single instance.
   selector:
-    matchLabels:
-      {{- include "worker.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: beat
+    matchLabels: {{- include "worker.beatSelectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        {{- include "worker.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: beat
+      labels: {{- include "worker.beatSelectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets: {{- toYaml . | nindent 8 }}

@@ -40,3 +40,9 @@ runbooks.
   queries, metrics, backups, Celery, MLflow promotion, drift, scaling.
 - [`restore.md`](./restore.md) — DB restore from backup, cluster
   rebuild procedure.
+
+## 3. Build / CI history
+
+- [`smoke-test-results.md`](./smoke-test-results.md) — record of the
+  pre-cluster smoke run (Python, TS, Helm); 12 bugs found and fixed
+  before first deploy.

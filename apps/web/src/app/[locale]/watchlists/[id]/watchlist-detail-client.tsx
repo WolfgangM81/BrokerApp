@@ -124,7 +124,7 @@ export function WatchlistDetailClient({ id }: { id: string }) {
               {data.members.map((m) => (
                 <li key={m.asset_id} className="flex items-center justify-between border-b py-2">
                   <Link
-                    href={{ pathname: "/assets/[id]", params: { id: m.asset_id } }}
+                    href={`/assets/${m.asset_id}`}
                     className="font-medium underline-offset-2 hover:underline"
                   >
                     {m.asset_id.slice(0, 8)}…

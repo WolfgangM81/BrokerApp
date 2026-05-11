@@ -20,8 +20,6 @@ from brokerapp_ml.cv import assert_no_lookahead, walk_forward
 from brokerapp_ml.features.indicators import build_features
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from brokerapp_ml.models.base import Forecaster
 
 
@@ -118,7 +116,3 @@ def walk_forward_backtest(
 
 
 __all__ = ["BacktestResult", "walk_forward_backtest"]
-
-
-# silence ruff
-_ = Sequence

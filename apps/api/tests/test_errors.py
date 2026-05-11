@@ -35,7 +35,12 @@ def _make_app() -> FastAPI:
 
 
 async def _client(app: FastAPI) -> AsyncClient:
-    return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+    # raise_app_exceptions=False so our catch-all Exception handler is
+    # actually invoked instead of httpx re-raising and bypassing it.
+    return AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://test",
+    )
 
 
 async def test_api_error_returns_problem_json() -> None:

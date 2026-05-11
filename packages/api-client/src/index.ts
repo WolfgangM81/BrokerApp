@@ -46,7 +46,7 @@ export class ApiError extends Error {
   }
 }
 
-interface RequestInitWithJson extends Omit<RequestInit, "body"> {
+interface RequestInitWithJson extends RequestInit {
   json?: unknown;
   query?: Record<string, string | number | boolean | undefined | null>;
 }

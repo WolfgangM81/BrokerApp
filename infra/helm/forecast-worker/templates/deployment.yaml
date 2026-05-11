@@ -58,20 +58,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "fworker.fullname" . }}-beat
-  labels:
-    {{- include "fworker.labels" . | nindent 4 }}
-    app.kubernetes.io/component: forecast-beat
+  labels: {{- include "fworker.beatLabels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      {{- include "fworker.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: forecast-beat
+    matchLabels: {{- include "fworker.beatSelectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        {{- include "fworker.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: forecast-beat
+      labels: {{- include "fworker.beatSelectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets: {{- toYaml . | nindent 8 }}

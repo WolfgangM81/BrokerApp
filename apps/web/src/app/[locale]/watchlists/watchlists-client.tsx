@@ -88,7 +88,7 @@ export function WatchlistsClient() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {data.map((wl) => (
-            <Link key={wl.id} href={{ pathname: "/watchlists/[id]", params: { id: wl.id } }}>
+            <Link key={wl.id} href={`/watchlists/${wl.id}`}>
               <Card className="transition-colors hover:bg-neutral-50">
                 <CardHeader>
                   <CardTitle>{wl.name}</CardTitle>

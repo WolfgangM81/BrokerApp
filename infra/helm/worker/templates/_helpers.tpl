@@ -16,3 +16,17 @@ app.kubernetes.io/part-of: brokerapp
 app.kubernetes.io/name: {{ include "worker.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+{{- define "worker.beatLabels" -}}
+helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+app.kubernetes.io/name: {{ include "worker.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: beat
+app.kubernetes.io/part-of: brokerapp
+{{- end }}
+{{- define "worker.beatSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "worker.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: beat
+{{- end }}
