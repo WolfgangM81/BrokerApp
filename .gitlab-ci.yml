@@ -19,6 +19,7 @@
 stages:
   - lint
   - test
+  - security
   - build
   - deploy
 
@@ -220,6 +221,106 @@ test:web:
   script:
     - pnpm --filter @brokerapp/web run typecheck
     - pnpm --filter @brokerapp/web run test
+
+test:integration:
+  # Apply every Alembic migration against a real TimescaleDB service and
+  # run the integration tests in services/db/tests. Catches schema /
+  # hypertable / continuous-aggregate regressions before they reach the
+  # cluster.
+  stage: test
+  image: $PYTHON_IMAGE
+  extends: .on-mr-or-main
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [services/db/**/*, apps/api/**/*, ml/**/*]
+    - if: $CI_COMMIT_BRANCH == "main"
+  services:
+    - name: timescale/timescaledb:2.17.0-pg16
+      alias: postgres
+      command: ["postgres", "-c", "shared_preload_libraries=timescaledb"]
+  variables:
+    POSTGRES_USER: brokerapp
+    POSTGRES_PASSWORD: brokerapp
+    POSTGRES_DB: brokerapp
+    BROKERAPP_DB_INTEGRATION_URL: "postgresql+psycopg://brokerapp:brokerapp@postgres:5432/brokerapp"
+  before_script:
+    - pip install --root-user-action=ignore uv
+    - uv venv
+    - source .venv/bin/activate
+    - uv pip install -e "services/db[sync,dev]"
+  script:
+    - pytest -ra services/db/tests
+
+# ============================================================================
+# SECURITY (lint-level gates, run on every MR + main)
+# ============================================================================
+
+lint:precommit:
+  # Re-run all pre-commit hooks against the full tree so CI fails fast on
+  # the same checks contributors should run locally.
+  stage: lint
+  image: python:3.12-slim-bookworm
+  extends: .on-mr-or-main
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git
+    - pip install --root-user-action=ignore pre-commit
+  script:
+    - pre-commit run --all-files --show-diff-on-failure
+
+security:sbom:
+  # Generate a CycloneDX SBOM for Python + JS. Published as a CI artifact
+  # so it can be diff'd between deploys / shipped to a vuln tracker.
+  stage: security
+  image: python:3.12-slim-bookworm
+  extends: .on-mr-or-main
+  before_script:
+    - pip install --root-user-action=ignore cyclonedx-bom pip-licenses
+    - apt-get update && apt-get install -y --no-install-recommends curl
+    - curl -fsSL https://github.com/CycloneDX/cyclonedx-node-npm/releases/latest/download/cyclonedx-node-npm
+        -o /usr/local/bin/cyclonedx-pnpm || true
+  script:
+    - mkdir -p sbom
+    - cyclonedx-py environment --output sbom/python.cdx.json || true
+    - corepack enable && pnpm install --frozen-lockfile || pnpm install
+    - npx --yes @cyclonedx/cyclonedx-npm@latest --output-file sbom/js.cdx.json || true
+  artifacts:
+    paths: [sbom/]
+    expire_in: 90 days
+
+security:trivy-fs:
+  # Filesystem scan for vulnerable deps and obvious secrets. Hard-fails
+  # on HIGH/CRITICAL findings; ignores DEV-only deps via .trivyignore.
+  stage: security
+  image: aquasec/trivy:0.55.2
+  extends: .on-mr-or-main
+  script:
+    - trivy fs --exit-code 1 --severity HIGH,CRITICAL --no-progress
+        --ignore-unfixed --skip-dirs node_modules,.venv .
+
+security:trivy-images:
+  # Scan the just-built images. Runs on main only because builds run on
+  # main only.
+  stage: security
+  image: aquasec/trivy:0.55.2
+  extends: .only-main
+  needs:
+    - job: build:api
+      optional: true
+    - job: build:migrate
+      optional: true
+    - job: build:worker
+      optional: true
+    - job: build:forecast
+      optional: true
+    - job: build:web
+      optional: true
+  script:
+    - for img in api migrate worker forecast web; do
+        echo "=== scanning $img ===" ;
+        trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress
+          --ignore-unfixed
+          "$CI_REGISTRY_IMAGE/$img:$CI_COMMIT_SHORT_SHA" || exit 1 ;
+      done
 
 # ============================================================================
 # BUILD (only on main; build all images via Kaniko)

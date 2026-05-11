@@ -22,6 +22,7 @@ from brokerapp_db.models import (
     Watchlist,
     WatchlistAsset,
 )
+from brokerapp_db.queries import BarRow, fetch_bars
 from brokerapp_db.session import (
     async_session_scope,
     make_async_engine,
@@ -39,6 +40,7 @@ __all__ = [
     "Backtest",
     "Bar",
     "BarGranularity",
+    "BarRow",
     "Base",
     "Forecast",
     "ForecastHorizon",
@@ -51,6 +53,7 @@ __all__ = [
     "Watchlist",
     "WatchlistAsset",
     "async_session_scope",
+    "fetch_bars",
     "make_async_engine",
     "make_async_sessionmaker",
     "make_sync_engine",
