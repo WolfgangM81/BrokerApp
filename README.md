@@ -46,8 +46,9 @@ the idempotent `infra/scripts/bootstrap-cluster.sh`; UI-clicks-only
 steps (Authentik OIDC apps, Vault secrets, GitLab CI variables) are
 documented step-by-step with exact field names.
 
-See also [`docs/runbooks/restore.md`](docs/runbooks/restore.md) and
-the ADRs in [`docs/adr/`](docs/adr/).
+See also [`docs/runbooks/restore.md`](docs/runbooks/restore.md),
+[`docs/roadmap.md`](docs/roadmap.md) for what's planned after the first
+deploy, and the ADRs in [`docs/adr/`](docs/adr/).
 
 ## Architecture (high-level)
 

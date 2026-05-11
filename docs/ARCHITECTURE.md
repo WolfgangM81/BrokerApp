@@ -225,7 +225,9 @@ GitLab CI/CD:
 | **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP ✅                                                              |
 | **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish ✅                                                    |
 | **7** | Mobile — Expo / React Native ✅                                                                                         |
-| **8** | Hardening — audit fixes, dedicated migrate/forecast images, cert-manager, server auth(), DB integration tests (current) |
+| **8** | Hardening — audit fixes, dedicated migrate/forecast images, cert-manager, server auth(), DB integration tests ✅ |
+| **8.7** | Continuous aggregates + compression, HTTP cache, CI security/integration gates ✅ |
+| **9+** | See [`roadmap.md`](./roadmap.md) — trigger-gated investments (OTel, DuckDB, Ray, FinBERT, self-hosted LLM, Argo Workflows) |
 
 We do not skip phases. Each phase ends with an explicit acceptance check.
 

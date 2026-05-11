@@ -44,5 +44,12 @@ runbooks.
 ## 3. Build / CI history
 
 - [`smoke-test-results.md`](./smoke-test-results.md) — record of the
-  pre-cluster smoke run (Python, TS, Helm); 12 bugs found and fixed
-  before first deploy.
+  pre-cluster smoke run (Python, TS, Helm); 20 bugs found and fixed
+  before first deploy (two passes).
+
+## 4. Forward-looking
+
+- [`../roadmap.md`](../roadmap.md) — Phase 9 onwards: observability +
+  performance + intelligence investments, each with a trigger
+  condition so we don't build them before the cluster pain demands
+  them.

@@ -97,8 +97,14 @@ Phase 4: Operations — Helm to cluster, monitoring, alerts, backups. ✅
 Phase 5: Advanced ML — TFT/N-HiTS, sentiment, macro, ensembles, SHAP, drift. ✅
 Phase 6: Risk + Portfolio — position sizing, multi-asset risk metrics. ✅
 Phase 7: Mobile (when needed) — Expo/React Native. ✅
-Phase 8 (current): Hardening — Audit-Fixes, dedicated `migrate` image,
-forecast-worker chart, cert-manager, server-side auth(), DB integration tests.
+Phase 8: Hardening — Audit-Fixes, dedicated `migrate` image,
+forecast-worker chart, cert-manager, server-side auth(), DB integration tests. ✅
+Phase 8.7: Continuous aggregates + compression, HTTP Cache-Control on bars,
+CI test:integration + trivy + cyclonedx + pre-commit gates. ✅
+Phase 9+: planned but **gated by trigger conditions** — see
+[`docs/roadmap.md`](../docs/roadmap.md). Topics: OpenTelemetry, Polars-lazy,
+DuckDB-read-layer, Ray distributed training, FinBERT, self-hosted LLM digest,
+Argo Workflows.
 
 Stay within the current phase unless explicitly told otherwise. Do not write
 TFT code in Phase 1. Do not skip Operations to chase ML features.
