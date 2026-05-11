@@ -3,11 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/routing";
 import { requireSession } from "@/lib/require-session";
 
-export default async function DashboardPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("dashboard");
@@ -42,9 +38,7 @@ export default async function DashboardPage({
           <CardHeader>
             <CardTitle>{t("recentForecasts")}</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-neutral-500">
-            Phase 3 ⏳
-          </CardContent>
+          <CardContent className="text-sm text-neutral-500">Phase 3 ⏳</CardContent>
         </Card>
       </div>
     </section>

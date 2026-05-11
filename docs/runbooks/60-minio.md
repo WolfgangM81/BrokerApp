@@ -1,6 +1,7 @@
 # Step 60 — MinIO (object storage)
 
 MinIO backs:
+
 - `mlflow` bucket — MLflow artifacts (models, plots, metrics blobs)
 - `backups` bucket — nightly age-encrypted pg_dump archives
 - `longhorn-backups` bucket — Longhorn volume snapshots (optional)

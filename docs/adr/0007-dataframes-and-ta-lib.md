@@ -13,6 +13,7 @@ We need to choose:
    MACD, Bollinger Bands, ATR, Stochastics, etc.).
 
 DataFrame options considered:
+
 - **Pandas** — industry default, huge ecosystem, but slow and memory-hungry
   for large frames; eager only.
 - **Polars** — modern, Rust-based, lazy + eager, 10–100x faster on typical
@@ -21,6 +22,7 @@ DataFrame options considered:
 - Both — pragmatic but doubles the cognitive load.
 
 TA-library options:
+
 - **pandas-ta** — pandas-friendly but unmaintained (last release is a beta
   from years ago).
 - **ta** — pure Python, active maintenance, simple install, covers the
@@ -49,19 +51,19 @@ TA-library options:
 ## Consequences
 
 **+** Polars is faster and uses less memory — both matter on the CPU-only
-       homelab cluster with 32 GB per node.
+homelab cluster with 32 GB per node.
 **+** TA-Lib's indicator set is comprehensive; no need to mix multiple
-       indicator libraries.
+indicator libraries.
 **+** Determinism: TA-Lib is widely used and trusted; results match
-       published references.
+published references.
 **−** The Polars/pandas boundary is real code we have to maintain. Helper
-       converters live in `services/ingest/src/ingest/convert.py` (and
-       analogous spots) — see code for conversion patterns.
+converters live in `services/ingest/src/ingest/convert.py` (and
+analogous spots) — see code for conversion patterns.
 **−** TA-Lib's C-library install is a real onboarding step; documented in
-       `README.md` and `Makefile`.
+`README.md` and `Makefile`.
 **−** Polars 1.x is still evolving; minor versions can introduce small
-       breaking changes. Mitigated by pinned upper bounds and Renovate
-       grouping.
+breaking changes. Mitigated by pinned upper bounds and Renovate
+grouping.
 
 ## Notes for contributors
 

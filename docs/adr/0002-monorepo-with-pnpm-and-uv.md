@@ -44,4 +44,4 @@ to only run when relevant files change.
 **+** One CI to rule them all; fewer auth/CI-config sprawl.
 **−** Cluster-wide lockstep — must coordinate breaking changes carefully.
 **−** Some tooling (IDE, language servers) needs explicit configuration to
-       handle multi-language workspace.
+handle multi-language workspace.

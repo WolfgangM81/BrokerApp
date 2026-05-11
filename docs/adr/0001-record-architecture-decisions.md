@@ -16,6 +16,7 @@ We will keep Architecture Decision Records (ADRs) in `docs/adr/`, one Markdown
 file per decision, numbered sequentially: `NNNN-kebab-case-title.md`.
 
 Each ADR has the following sections:
+
 - **Status** — Proposed / Accepted / Deprecated / Superseded by ADR-NNNN
 - **Date** — ISO date
 - **Context** — what made this decision necessary

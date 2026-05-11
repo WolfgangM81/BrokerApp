@@ -162,6 +162,7 @@ Promotion flow:
 ## Drift investigation
 
 If Prometheus alert `BrokerAppDriftHigh` fires (or Grafana shows PSI
+
 > 0.25 for any feature, see ADR-0012):
 
 ```bash
@@ -179,13 +180,13 @@ kubectl -n brokerapp exec -it deploy/brokerapp-forecast-worker -- \
 
 ## Scaling
 
-| Resource | Knob | Why |
-|---|---|---|
-| API replicas | `helm upgrade ... --set api.replicaCount=N` | RPS pressure |
-| Worker replicas | `... --set worker.replicaCount=N` | ingest queue depth |
-| Forecast workers | `... --set forecastWorker.replicaCount=N` | nightly retrain backlog |
-| DB volume | grow Longhorn PVC + `pg_repack` | bars table size |
-| Prometheus retention | `kps` values | space crunch |
+| Resource             | Knob                                        | Why                     |
+| -------------------- | ------------------------------------------- | ----------------------- |
+| API replicas         | `helm upgrade ... --set api.replicaCount=N` | RPS pressure            |
+| Worker replicas      | `... --set worker.replicaCount=N`           | ingest queue depth      |
+| Forecast workers     | `... --set forecastWorker.replicaCount=N`   | nightly retrain backlog |
+| DB volume            | grow Longhorn PVC + `pg_repack`             | bars table size         |
+| Prometheus retention | `kps` values                                | space crunch            |
 
 Auto-scaling: `api` has HPA disabled by default
 (`autoscaling.enabled=false`). Flip it to true when there's real
@@ -198,13 +199,13 @@ See [restore.md](./restore.md) — the runbook for "the DB is gone" /
 
 ## Updating the cluster
 
-| What | How |
-|---|---|
-| k3s | `curl -sfL https://get.k3s.io \| sh -` on each node, one at a time |
-| Longhorn | `helm upgrade longhorn longhorn/longhorn --reuse-values --version <new>` |
-| cert-manager | `helm upgrade cert-manager jetstack/cert-manager --reuse-values --version <new>` |
-| kube-prometheus-stack | `helm upgrade kps ... --reuse-values --version <new>` |
-| BrokerApp itself | normal `git push` → CI runs `helm upgrade` |
+| What                  | How                                                                              |
+| --------------------- | -------------------------------------------------------------------------------- |
+| k3s                   | `curl -sfL https://get.k3s.io \| sh -` on each node, one at a time               |
+| Longhorn              | `helm upgrade longhorn longhorn/longhorn --reuse-values --version <new>`         |
+| cert-manager          | `helm upgrade cert-manager jetstack/cert-manager --reuse-values --version <new>` |
+| kube-prometheus-stack | `helm upgrade kps ... --reuse-values --version <new>`                            |
+| BrokerApp itself      | normal `git push` → CI runs `helm upgrade`                                       |
 
 Always check release notes for breaking changes (especially Longhorn
 and kube-prometheus-stack).

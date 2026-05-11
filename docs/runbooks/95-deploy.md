@@ -1,6 +1,6 @@
 # Step 95 — First deploy + smoke tests
 
-Steps 10–90 prepared a *cluster that can host BrokerApp*. This runbook
+Steps 10–90 prepared a _cluster that can host BrokerApp_. This runbook
 actually deploys it and walks through "did it work?".
 
 ## 95.1 Pre-flight checklist
@@ -75,6 +75,7 @@ watch -n2 kubectl -n brokerapp get pods,svc,ingress
 ```
 
 Order of events:
+
 1. `brokerapp-db-0` reaches `Running` (~30 s).
 2. `brokerapp-db-migrate-<hash>` Job runs and reaches `Completed`.
    ```bash

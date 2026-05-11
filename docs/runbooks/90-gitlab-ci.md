@@ -50,14 +50,14 @@ GitLab → Project `wolfgangm81/brokerapp` → **Settings** → **CI/CD** →
 Use **Protected: ✅**, **Masked: ✅ (for token-like values)**,
 **Expand variable reference: ❌**.
 
-| Key | Value | How to produce it |
-|---|---|---|
-| `KUBE_CONFIG` | base64-encoded kubeconfig from step 20 | `base64 -w0 < ~/.kube/brokerapp.yaml` |
-| `VAULT_ADDR` | `https://vault.orbiter` | constant |
-| `VAULT_TOKEN` | token from step 80.6 | `vault token create ...` |
-| `CI_REGISTRY_USER` | `gitlab-ci-token` | auto (don't set explicitly) |
-| `CI_REGISTRY_PASSWORD` | `$CI_JOB_TOKEN` | auto (don't set explicitly) |
-| `CI_REGISTRY_IMAGE` | `gitlab.orbiter:5050/wolfgangm81/brokerapp` | auto |
+| Key                    | Value                                       | How to produce it                     |
+| ---------------------- | ------------------------------------------- | ------------------------------------- |
+| `KUBE_CONFIG`          | base64-encoded kubeconfig from step 20      | `base64 -w0 < ~/.kube/brokerapp.yaml` |
+| `VAULT_ADDR`           | `https://vault.orbiter`                     | constant                              |
+| `VAULT_TOKEN`          | token from step 80.6                        | `vault token create ...`              |
+| `CI_REGISTRY_USER`     | `gitlab-ci-token`                           | auto (don't set explicitly)           |
+| `CI_REGISTRY_PASSWORD` | `$CI_JOB_TOKEN`                             | auto (don't set explicitly)           |
+| `CI_REGISTRY_IMAGE`    | `gitlab.orbiter:5050/wolfgangm81/brokerapp` | auto                                  |
 
 > `CI_REGISTRY_*` variables are populated by GitLab automatically when
 > you push to a project with the registry enabled. You only need to
@@ -138,6 +138,7 @@ git push origin claude/stock-forecast-app-kmWQG
 ```
 
 Expected first-run timings (cold caches):
+
 - `lint:*` ~30 s each
 - `test:*` ~60 s each
 - `build:api`, `build:migrate`, `build:web` ~3 min each

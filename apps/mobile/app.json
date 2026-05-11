@@ -17,11 +17,7 @@
     "android": {
       "package": "lan.orbiter.brokerapp"
     },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      "expo-notifications"
-    ],
+    "plugins": ["expo-router", "expo-secure-store", "expo-notifications"],
     "experiments": {
       "typedRoutes": true
     },

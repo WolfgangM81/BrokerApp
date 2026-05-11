@@ -33,4 +33,4 @@ of the product depends on avoiding it.
 **+** Forces clean code — feature pipelines must be honest about timing.
 **−** Slower experimentation; can't take cross-validation shortcuts.
 **−** Some out-of-the-box CV helpers (e.g. sklearn's `KFold`) cannot be used
-       without wrapping; we provide our own splitters in `ml/features/`.
+without wrapping; we provide our own splitters in `ml/features/`.

@@ -28,7 +28,7 @@ translations lag behind.
 
 **+** UI feels native to the user; technical artifacts stay English.
 **+** Easy to add Italian or French later (homelab is multi-user; family
-       members may not all speak the same).
+members may not all speak the same).
 **−** Up-front discipline cost — devs must add keys, not strings.
 **−** A missing-translation runtime check (or CI lint) is needed to keep
-       `de` and `en` in sync; we add it in Phase 2 when the web app grows.
+`de` and `en` in sync; we add it in Phase 2 when the web app grows.

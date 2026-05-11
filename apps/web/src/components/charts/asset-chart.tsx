@@ -33,7 +33,7 @@ export function AssetChart({ bars }: { bars: BarOut[] }) {
     });
     series.setData(
       bars.map((b) => ({
-        time: (Math.floor(new Date(b.time).getTime() / 1000) as unknown) as Time,
+        time: Math.floor(new Date(b.time).getTime() / 1000) as unknown as Time,
         open: Number(b.open),
         high: Number(b.high),
         low: Number(b.low),

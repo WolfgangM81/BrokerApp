@@ -33,7 +33,7 @@ worker:
   enabled: true
   replicaCount: 2
   beat:
-    enabled: true  # ingest beat: nightly EOD + intraday refresh
+    enabled: true # ingest beat: nightly EOD + intraday refresh
   image:
     tag: "latest"
 
@@ -41,7 +41,7 @@ forecastWorker:
   enabled: true
   replicaCount: 1
   beat:
-    enabled: true  # forecast beat: nightly retrain dispatch
+    enabled: true # forecast beat: nightly retrain dispatch
   image:
     tag: "latest"
 

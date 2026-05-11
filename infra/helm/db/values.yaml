@@ -33,7 +33,7 @@ service:
   port: 5432
 
 podSecurityContext:
-  fsGroup: 999  # postgres
+  fsGroup: 999 # postgres
   runAsNonRoot: true
   runAsUser: 999
 

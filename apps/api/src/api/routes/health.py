@@ -63,7 +63,10 @@ async def readyz(
 
     # Redis
     try:
-        client = redis_async.from_url(str(settings.redis_url), socket_timeout=2.0)
+        client = redis_async.from_url(  # type: ignore[no-untyped-call]
+            str(settings.redis_url),
+            socket_timeout=2.0,
+        )
         try:
             pong = await client.ping()
             checks.append(ReadinessCheck(name="redis", ok=bool(pong)))

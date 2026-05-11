@@ -3,7 +3,7 @@
 # `brokerapp-backup-secrets` (key: `age.pub`).
 
 schedule:
-  backup: "30 1 * * *"      # 01:30 UTC nightly, after EOD ingest
+  backup: "30 1 * * *" # 01:30 UTC nightly, after EOD ingest
   restoreTest: "30 4 * * 0" # Sundays 04:30 UTC
 
 backupImage: postgres:16-alpine

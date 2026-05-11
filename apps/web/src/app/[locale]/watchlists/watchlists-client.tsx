@@ -80,7 +80,9 @@ export function WatchlistsClient() {
       {isLoading ? (
         <p className="text-sm text-neutral-500">{tCommon("loading")}</p>
       ) : error ? (
-        <p className="text-sm text-red-600">{tCommon("error")}: {(error as Error).message}</p>
+        <p className="text-sm text-red-600">
+          {tCommon("error")}: {(error as Error).message}
+        </p>
       ) : !data || data.length === 0 ? (
         <p className="rounded-md border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500">
           {t("empty")}

@@ -28,11 +28,11 @@ a significant time sink and a needless reinvention.
 ## Consequences
 
 **+** Zero password code in our repo. SSO with whatever else lives in the
-       homelab.
+homelab.
 **+** Stateless API; horizontally scalable.
 **+** Future mobile clients use the same OIDC flow.
 **−** Hard dependency on Authentik availability. Mitigated by it being an
-       existing, monitored service in the cluster.
+existing, monitored service in the cluster.
 **−** Local `users` table can drift from Authentik over time; periodic
-       reconciliation job lives in `services/notifier` (or its own tiny
-       cron).
+reconciliation job lives in `services/notifier` (or its own tiny
+cron).

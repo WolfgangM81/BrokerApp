@@ -6,8 +6,10 @@ import { useCallback, useEffect, useState } from "react";
 const TOKEN_KEY = "brokerapp.access_token";
 const REFRESH_KEY = "brokerapp.refresh_token";
 
-const issuer = (Constants.expoConfig?.extra as { authIssuer?: string } | undefined)?.authIssuer ?? "";
-const clientId = (Constants.expoConfig?.extra as { authClientId?: string } | undefined)?.authClientId ?? "";
+const issuer =
+  (Constants.expoConfig?.extra as { authIssuer?: string } | undefined)?.authIssuer ?? "";
+const clientId =
+  (Constants.expoConfig?.extra as { authClientId?: string } | undefined)?.authClientId ?? "";
 
 const discovery = {
   authorizationEndpoint: `${issuer}authorize/`,

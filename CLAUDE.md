@@ -52,6 +52,7 @@ See [`README.md`](./README.md) for the table. Key versions:
 ## Coding conventions
 
 ### Python
+
 - Format: `ruff format`. Lint: `ruff check`. Types: `mypy --strict`.
 - 4-space indent, line length 100.
 - Public functions get type hints. No `Any` unless justified.
@@ -66,18 +67,21 @@ See [`README.md`](./README.md) for the table. Key versions:
   `ml/features/indicators.py` (Phase 3+).
 
 ### TypeScript
+
 - Format: `prettier`. Lint: `eslint`.
 - 2-space indent, line length 100, double quotes, trailing commas.
 - Strict TS, no `any`. Use generated `api-client` types.
 - Server Components by default in `apps/web/`; mark client with `"use client"` deliberately.
 
 ### Tests
+
 - Backend: `pytest` + `pytest-asyncio`. Coverage target 70%, more on
   business logic (forecast/backtest/risk).
 - Frontend: `vitest` (units), `playwright` (E2E against docker-compose).
 - ML: deterministic tests against fixture datasets in `ml/tests/fixtures/`.
 
 ### Commits
+
 - Conventional Commits: `feat(api): ...`, `fix(web): ...`, `chore: ...`,
   `docs(adr): ...`, etc.
 - Keep commits small and reviewable. Prefer multiple commits over one big one.
@@ -86,7 +90,7 @@ See [`README.md`](./README.md) for the table. Key versions:
 
 Phase 0: Foundation — repo skeleton, tooling, CI/CD bones. ✅
 Phase 1: Data backbone — schemas, ingest, market calendars,
-  versioned API, Authentik auth. ✅
+versioned API, Authentik auth. ✅
 Phase 2: UI + Auth — Next.js + Authentik OIDC + watchlists/charts. ✅
 Phase 3: Forecast baseline — Naive, ARIMA, LightGBM, walk-forward backtest. ✅
 Phase 4: Operations — Helm to cluster, monitoring, alerts, backups. ✅
@@ -94,7 +98,7 @@ Phase 5: Advanced ML — TFT/N-HiTS, sentiment, macro, ensembles, SHAP, drift. �
 Phase 6: Risk + Portfolio — position sizing, multi-asset risk metrics. ✅
 Phase 7: Mobile (when needed) — Expo/React Native. ✅
 Phase 8 (current): Hardening — Audit-Fixes, dedicated `migrate` image,
-  forecast-worker chart, cert-manager, server-side auth(), DB integration tests.
+forecast-worker chart, cert-manager, server-side auth(), DB integration tests.
 
 Stay within the current phase unless explicitly told otherwise. Do not write
 TFT code in Phase 1. Do not skip Operations to chase ML features.
@@ -113,7 +117,7 @@ TFT code in Phase 1. Do not skip Operations to chase ML features.
 - Bars schema: hypertable in `market.bars`, primary key
   `(asset_id, time, granularity)`. Idempotency = unique constraint.
 - Asset → adapter mapping lives in `services/ingest/src/ingest/sources/
-  registry.py`. New source = new module + register here.
+registry.py`. New source = new module + register here.
 - Adding to a watchlist triggers `ingest.backfill_asset` via Celery
   (`_trigger_backfill` in routes/watchlists.py).
 

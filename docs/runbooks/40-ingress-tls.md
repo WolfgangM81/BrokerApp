@@ -43,6 +43,7 @@ kubectl apply -f infra/helm/observability/cluster-issuer.yaml
 ```
 
 This creates:
+
 - `ClusterIssuer/brokerapp-internal-selfsigned` (boot-strap-only)
 - `Certificate/brokerapp-internal-ca` (10-year CA root, in `cert-manager` ns)
 - `ClusterIssuer/brokerapp-internal-ca` (signs everything ending in `.orbiter`)

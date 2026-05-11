@@ -37,6 +37,6 @@ clarity). Continuous aggregates roll up bars to 15m / 1h / 1d.
 **+** Continuous aggregates handle most chart-aggregation needs in the DB.
 **+** Self-hostable on the Longhorn StorageClass; no cloud lock-in.
 **−** Operational know-how for hypertable maintenance (chunks, compression,
-       retention policies) is required.
+retention policies) is required.
 **−** Not as fast as specialized columnar TSDBs at extreme scale — acceptable
-       for our scale (thousands of assets, intraday bars over years).
+for our scale (thousands of assets, intraday bars over years).

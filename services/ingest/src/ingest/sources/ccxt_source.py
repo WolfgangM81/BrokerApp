@@ -131,16 +131,17 @@ def _split_symbol(asset: AssetLike) -> tuple[str, str]:
 
 
 def _empty_frame() -> pl.DataFrame:
-    schema = {
-        "time": pl.Datetime(time_zone="UTC"),
-        "open": pl.Float64,
-        "high": pl.Float64,
-        "low": pl.Float64,
-        "close": pl.Float64,
-        "volume": pl.Float64,
-        "adj_close": pl.Float64,
-    }
-    return pl.DataFrame(schema=schema)
+    return pl.DataFrame(
+        schema=[
+            ("time", pl.Datetime(time_zone="UTC")),
+            ("open", pl.Float64()),
+            ("high", pl.Float64()),
+            ("low", pl.Float64()),
+            ("close", pl.Float64()),
+            ("volume", pl.Float64()),
+            ("adj_close", pl.Float64()),
+        ],
+    )
 
 
 def _to_decimal(value: float | None) -> Decimal | None:

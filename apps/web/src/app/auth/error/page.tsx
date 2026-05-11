@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 export default function AuthErrorPage() {
@@ -9,9 +10,9 @@ export default function AuthErrorPage() {
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
       <h1 className="text-xl font-semibold">Authentication error</h1>
       <p className="text-sm text-neutral-600">{error}</p>
-      <a className="text-sm underline" href="/auth/signin">
+      <Link className="text-sm underline" href="/auth/signin">
         Back to sign-in
-      </a>
+      </Link>
     </main>
   );
 }

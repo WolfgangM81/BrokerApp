@@ -52,7 +52,9 @@ export function AssetDetailClient({ id }: { id: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("granularity")}: {granularity}</CardTitle>
+          <CardTitle>
+            {t("granularity")}: {granularity}
+          </CardTitle>
         </CardHeader>
         <CardContent className="h-[420px]">
           {bars.isLoading ? (

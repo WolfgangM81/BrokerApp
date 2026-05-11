@@ -1,3 +1,7 @@
+# Celery decorators are untyped (return Any); mypy strict would force
+# every task to spell out `(self: Any) -> Any` and still complain about
+# `@celery_app.task`. Disable the two relevant codes file-wide.
+# mypy: disable-error-code="untyped-decorator,no-untyped-def"
 """Celery tasks for the ingest worker.
 
 Phase 1 tasks:

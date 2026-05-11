@@ -166,7 +166,7 @@ vault kv get -field=age.key kv/brokerapp/backup
 
 Store the output in a sealed envelope / a YubiKey-protected vault entry
 / a piece of paper in your safe — whichever your homelab risk tolerance
-prefers. The point is: it lives somewhere that does *not* depend on
+prefers. The point is: it lives somewhere that does _not_ depend on
 the cluster.
 
 Next: [90-gitlab-ci.md](./90-gitlab-ci.md).

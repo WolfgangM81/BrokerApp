@@ -59,9 +59,7 @@ export default function Home() {
             <Link href={{ pathname: "/watchlists/[id]", params: { id: item.id } }} asChild>
               <Pressable style={styles.card}>
                 <Text style={styles.cardTitle}>{item.name}</Text>
-                {item.description ? (
-                  <Text style={styles.subtitle}>{item.description}</Text>
-                ) : null}
+                {item.description ? <Text style={styles.subtitle}>{item.description}</Text> : null}
               </Pressable>
             </Link>
           )}
@@ -78,9 +76,20 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "600" },
   subtitle: { fontSize: 14, color: "#666" },
   link: { color: "#2563eb", fontWeight: "500" },
-  primary: { backgroundColor: "#111827", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
+  primary: {
+    backgroundColor: "#111827",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
   primaryText: { color: "#fff", fontWeight: "600" },
-  card: { backgroundColor: "#fff", padding: 16, borderRadius: 8, borderWidth: 1, borderColor: "#e5e5e5" },
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
+  },
   cardTitle: { fontSize: 16, fontWeight: "600" },
   error: { color: "#b91c1c" },
 });

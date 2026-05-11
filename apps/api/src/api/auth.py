@@ -91,7 +91,7 @@ async def _verify_token(token: str, settings: Settings) -> dict[str, Any]:
         )
     except JWTError as exc:
         raise unauthorized(code="auth.invalid_token", detail=str(exc)) from exc
-    return claims
+    return dict(claims)
 
 
 async def _upsert_user(claims: dict[str, Any], session: AsyncSession) -> User:

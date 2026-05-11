@@ -44,7 +44,7 @@ def is_market_open(calendar: str, when: datetime | None = None) -> bool:
     moment = when or datetime.now(UTC)
     if moment.tzinfo is None:
         moment = moment.replace(tzinfo=UTC)
-    return cal.is_trading_minute(moment.astimezone(UTC))
+    return bool(cal.is_trading_minute(moment.astimezone(UTC)))
 
 
 __all__ = ["CRYPTO_CALENDAR", "default_calendar", "is_market_open"]

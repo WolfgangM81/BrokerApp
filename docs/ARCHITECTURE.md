@@ -1,7 +1,7 @@
 # BrokerApp — Architecture
 
 This document is the canonical, mid-level view of how BrokerApp is built. For
-the *why* behind individual choices, see the
+the _why_ behind individual choices, see the
 [Architecture Decision Records](./adr/). For day-to-day operations, see
 [`runbooks/`](./runbooks/).
 
@@ -73,6 +73,7 @@ so the source is swappable. Respect market calendars via `exchange_calendars`.
 ### 2.4 `services/forecast` — ML Service
 
 Two responsibilities, separated as Celery task groups:
+
 - **Training:** scheduled retrains, hyperparameter sweeps via Optuna,
   walk-forward backtests. Models registered in MLflow.
 - **Inference:** serve forecasts on-demand and on schedule, persist results in
@@ -185,6 +186,7 @@ as "why this forecast?" — non-negotiable for a decision-support tool.
 ### 6.2 Pipeline
 
 GitLab CI/CD:
+
 1. **Lint** — ruff, mypy, eslint, prettier
 2. **Test** — pytest, vitest, playwright
 3. **Build** — Docker images for `api`, `web`, `worker`; pushed to GitLab
@@ -193,12 +195,12 @@ GitLab CI/CD:
 
 ### 6.3 Hostnames (`.orbiter`)
 
-| Host | Service |
-|------|---------|
-| `brokerapp.orbiter` | Web |
-| `api.brokerapp.orbiter` | API |
-| `mlflow.brokerapp.orbiter` | MLflow UI |
-| `flower.brokerapp.orbiter` | Celery Flower (optional) |
+| Host                        | Service                             |
+| --------------------------- | ----------------------------------- |
+| `brokerapp.orbiter`         | Web                                 |
+| `api.brokerapp.orbiter`     | API                                 |
+| `mlflow.brokerapp.orbiter`  | MLflow UI                           |
+| `flower.brokerapp.orbiter`  | Celery Flower (optional)            |
 | `grafana.brokerapp.orbiter` | Grafana (or shared cluster Grafana) |
 
 ## 7. Security & compliance
@@ -213,16 +215,16 @@ GitLab CI/CD:
 
 ## 8. Phases
 
-| Phase | Goal |
-|-------|------|
-| **0** | Repo skeleton, tooling, CI bones ✅ |
-| **1** | Data backbone — schemas, ingest, calendars, API + tests ✅ |
-| **2** | UI + Auth — Next.js + Authentik OIDC end-to-end ✅ |
-| **3** | Forecast baseline + walk-forward backtest, UI integration ✅ |
-| **4** | Operations — Helm to cluster, monitoring, alerting, backups ✅ |
-| **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP ✅ |
-| **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish ✅ |
-| **7** | Mobile — Expo / React Native ✅ |
+| Phase | Goal                                                                                                                    |
+| ----- | ----------------------------------------------------------------------------------------------------------------------- |
+| **0** | Repo skeleton, tooling, CI bones ✅                                                                                     |
+| **1** | Data backbone — schemas, ingest, calendars, API + tests ✅                                                              |
+| **2** | UI + Auth — Next.js + Authentik OIDC end-to-end ✅                                                                      |
+| **3** | Forecast baseline + walk-forward backtest, UI integration ✅                                                            |
+| **4** | Operations — Helm to cluster, monitoring, alerting, backups ✅                                                          |
+| **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP ✅                                                              |
+| **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish ✅                                                    |
+| **7** | Mobile — Expo / React Native ✅                                                                                         |
 | **8** | Hardening — audit fixes, dedicated migrate/forecast images, cert-manager, server auth(), DB integration tests (current) |
 
 We do not skip phases. Each phase ends with an explicit acceptance check.

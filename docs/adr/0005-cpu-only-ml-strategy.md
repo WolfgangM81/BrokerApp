@@ -37,6 +37,6 @@ and horizons.
 **+** Strong baselines (LightGBM) ship in Phase 3 with no GPU dependency.
 **+** Costs stay at hardware electricity.
 **−** SOTA deep-learning experimentation is slower; we accept long retrain
-       cycles for advanced models.
+cycles for advanced models.
 **−** Hyperparameter sweeps are expensive — must use efficient search
-       (Optuna with pruning) rather than brute-force grids.
+(Optuna with pruning) rather than brute-force grids.

@@ -7,20 +7,20 @@ names you'll see.
 
 ## Reading order
 
-| # | Runbook | Where it runs | Time |
-|---|---|---|---|
-| 10 | [Hardware + OS prep](./10-prereqs.md) | each Lenovo node | ~30 min × 3 |
-| 20 | [Kubernetes (k3s)](./20-kubernetes.md) | 1 server + 2 agents | ~15 min |
-| 30 | [Storage (Longhorn)](./30-storage-longhorn.md) | cluster | ~10 min |
-| 40 | [Ingress + TLS](./40-ingress-tls.md) | cluster | ~10 min |
-| 50 | [Monitoring stack](./50-monitoring.md) | cluster | ~15 min |
-| 60 | [MinIO (object store)](./60-minio.md) | cluster | ~10 min |
-| 70 | [Authentik OIDC apps](./70-authentik.md) | Authentik UI | ~10 min |
-| 80 | [Vault secrets](./80-vault.md) | Vault UI + CLI | ~15 min |
-| 90 | [GitLab CI](./90-gitlab-ci.md) | GitLab UI | ~10 min |
-| 95 | [First deploy + smoke tests](./95-deploy.md) | local + cluster | ~20 min |
-| — | [Day-2 operations](./day2-operations.md) | reference | n/a |
-| — | [Restore from backup](./restore.md) | when needed | reference |
+| #   | Runbook                                        | Where it runs       | Time        |
+| --- | ---------------------------------------------- | ------------------- | ----------- |
+| 10  | [Hardware + OS prep](./10-prereqs.md)          | each Lenovo node    | ~30 min × 3 |
+| 20  | [Kubernetes (k3s)](./20-kubernetes.md)         | 1 server + 2 agents | ~15 min     |
+| 30  | [Storage (Longhorn)](./30-storage-longhorn.md) | cluster             | ~10 min     |
+| 40  | [Ingress + TLS](./40-ingress-tls.md)           | cluster             | ~10 min     |
+| 50  | [Monitoring stack](./50-monitoring.md)         | cluster             | ~15 min     |
+| 60  | [MinIO (object store)](./60-minio.md)          | cluster             | ~10 min     |
+| 70  | [Authentik OIDC apps](./70-authentik.md)       | Authentik UI        | ~10 min     |
+| 80  | [Vault secrets](./80-vault.md)                 | Vault UI + CLI      | ~15 min     |
+| 90  | [GitLab CI](./90-gitlab-ci.md)                 | GitLab UI           | ~10 min     |
+| 95  | [First deploy + smoke tests](./95-deploy.md)   | local + cluster     | ~20 min     |
+| —   | [Day-2 operations](./day2-operations.md)       | reference           | n/a         |
+| —   | [Restore from backup](./restore.md)            | when needed         | reference   |
 
 Total green-field bring-up: roughly **3 hours of attention** plus the
 unattended bits (OS install, image builds).
@@ -42,15 +42,15 @@ unattended bits (OS install, image builds).
 
 ## Naming conventions used throughout
 
-| Name | Value |
-|---|---|
-| Internal domain | `*.orbiter` |
-| App domain | `brokerapp.orbiter`, `api.brokerapp.orbiter` |
-| Cluster nodes | `m75q-01`, `m75q-02`, `m75q-03` |
-| k8s context | `brokerapp` |
-| Namespace | `brokerapp` |
+| Name            | Value                                               |
+| --------------- | --------------------------------------------------- |
+| Internal domain | `*.orbiter`                                         |
+| App domain      | `brokerapp.orbiter`, `api.brokerapp.orbiter`        |
+| Cluster nodes   | `m75q-01`, `m75q-02`, `m75q-03`                     |
+| k8s context     | `brokerapp`                                         |
+| Namespace       | `brokerapp`                                         |
 | GitLab registry | `gitlab.orbiter:5050/wolfgangm81/brokerapp/<image>` |
-| Vault KV mount | `kv/brokerapp/...` |
+| Vault KV mount  | `kv/brokerapp/...`                                  |
 
 ## Automation versus by hand
 

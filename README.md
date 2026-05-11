@@ -65,20 +65,20 @@ for the full picture and decisions.
 
 ## Tech stack (summary)
 
-| Layer | Choice |
-|-------|--------|
-| Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui, TanStack Query, TradingView Lightweight Charts, next-intl (DE/EN) |
-| Mobile   | Expo 52 + expo-router, expo-auth-session (OIDC), expo-secure-store, expo-notifications |
-| Backend  | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic |
-| Workers  | Celery + Redis, Celery Beat (separate `ingest` and `forecast` queues) |
-| ML       | Polars, LightGBM, XGBoost, statsmodels, Darts (TFT / N-HiTS), MLflow, Optuna, SHAP, TA-Lib |
-| Macro / sentiment | FRED CSV, lexicon-based sentiment stub (FinBERT swap-ready) |
-| Risk     | Sharpe / Sortino / VaR / CVaR / max-DD, Kelly / fixed-fractional / vol-target, ATR + pct stops |
-| Data     | TimescaleDB (hypertable + continuous aggregates), Redis, MinIO |
-| Auth     | Authentik (OIDC), JWKS-verified in API; `X-Internal-Token` for worker → API |
-| Infra    | k8s (Homelab, 3× Lenovo m75q), Helm umbrella, Traefik, Longhorn, cert-manager, kube-prometheus-stack, Loki |
-| CI/CD    | GitLab CI/CD → GitLab Container Registry (`gitlab.orbiter:5050`) → Helm upgrade |
-| Backups  | nightly `pg_dump` + age-encrypted upload to MinIO, weekly restore-test CronJob (ADR-0010) |
+| Layer             | Choice                                                                                                         |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| Frontend          | Next.js 15, TypeScript, Tailwind, shadcn/ui, TanStack Query, TradingView Lightweight Charts, next-intl (DE/EN) |
+| Mobile            | Expo 52 + expo-router, expo-auth-session (OIDC), expo-secure-store, expo-notifications                         |
+| Backend           | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic                                                       |
+| Workers           | Celery + Redis, Celery Beat (separate `ingest` and `forecast` queues)                                          |
+| ML                | Polars, LightGBM, XGBoost, statsmodels, Darts (TFT / N-HiTS), MLflow, Optuna, SHAP, TA-Lib                     |
+| Macro / sentiment | FRED CSV, lexicon-based sentiment stub (FinBERT swap-ready)                                                    |
+| Risk              | Sharpe / Sortino / VaR / CVaR / max-DD, Kelly / fixed-fractional / vol-target, ATR + pct stops                 |
+| Data              | TimescaleDB (hypertable + continuous aggregates), Redis, MinIO                                                 |
+| Auth              | Authentik (OIDC), JWKS-verified in API; `X-Internal-Token` for worker → API                                    |
+| Infra             | k8s (Homelab, 3× Lenovo m75q), Helm umbrella, Traefik, Longhorn, cert-manager, kube-prometheus-stack, Loki     |
+| CI/CD             | GitLab CI/CD → GitLab Container Registry (`gitlab.orbiter:5050`) → Helm upgrade                                |
+| Backups           | nightly `pg_dump` + age-encrypted upload to MinIO, weekly restore-test CronJob (ADR-0010)                      |
 
 ## Repository layout
 
@@ -102,6 +102,7 @@ brokerapp/
 ## Local development
 
 Prerequisites:
+
 - Node 22+ and `pnpm` 9+
 - Python 3.12 and [`uv`](https://docs.astral.sh/uv/)
 - Docker + Docker Compose

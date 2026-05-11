@@ -1,6 +1,6 @@
 # Observability stack — kube-prometheus-stack + Loki
 
-These are *external* upstream charts with our values overrides; we do not
+These are _external_ upstream charts with our values overrides; we do not
 package them. Install once per cluster.
 
 ```bash

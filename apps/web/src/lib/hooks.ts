@@ -1,6 +1,12 @@
 "use client";
 
-import { ApiClient, type AssetOut, type BarsResponse, type WatchlistDetail, type WatchlistOut } from "@brokerapp/api-client";
+import {
+  ApiClient,
+  type AssetOut,
+  type BarsResponse,
+  type WatchlistDetail,
+  type WatchlistOut,
+} from "@brokerapp/api-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import * as React from "react";

@@ -24,7 +24,7 @@ env:
 envFromSecret: brokerapp-worker-secrets
 
 beat:
-  enabled: false  # enable in Phase 1+ when scheduled tasks land
+  enabled: false # enable in Phase 1+ when scheduled tasks land
   resources:
     requests:
       cpu: 50m

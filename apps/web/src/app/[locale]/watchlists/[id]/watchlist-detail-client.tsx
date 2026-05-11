@@ -5,13 +5,7 @@ import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -50,9 +44,7 @@ export function WatchlistDetailClient({ id }: { id: string }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
-          {data.description ? (
-            <p className="text-sm text-neutral-500">{data.description}</p>
-          ) : null}
+          {data.description ? <p className="text-sm text-neutral-500">{data.description}</p> : null}
         </div>
         <Button
           variant="destructive"

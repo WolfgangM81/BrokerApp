@@ -93,7 +93,7 @@ class YFinanceSource(MarketDataSource):
             return _empty_frame()
 
         # Normalize: ensure UTC tz-aware index, then to Polars.
-        df_pandas.index = df_pandas.index.tz_convert("UTC")  # type: ignore[union-attr]
+        df_pandas.index = df_pandas.index.tz_convert("UTC")
         df_pandas = df_pandas.reset_index().rename(
             columns={
                 "Datetime": "time",
@@ -116,16 +116,17 @@ class YFinanceSource(MarketDataSource):
 
 
 def _empty_frame() -> pl.DataFrame:
-    schema = {
-        "time": pl.Datetime(time_zone="UTC"),
-        "open": pl.Float64,
-        "high": pl.Float64,
-        "low": pl.Float64,
-        "close": pl.Float64,
-        "volume": pl.Float64,
-        "adj_close": pl.Float64,
-    }
-    return pl.DataFrame(schema=schema)
+    return pl.DataFrame(
+        schema=[
+            ("time", pl.Datetime(time_zone="UTC")),
+            ("open", pl.Float64()),
+            ("high", pl.Float64()),
+            ("low", pl.Float64()),
+            ("close", pl.Float64()),
+            ("volume", pl.Float64()),
+            ("adj_close", pl.Float64()),
+        ],
+    )
 
 
 def _coerce_frame(frame: pl.DataFrame) -> pl.DataFrame:

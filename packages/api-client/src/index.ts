@@ -73,7 +73,10 @@ export class ApiClient {
     const res = await fetchImpl(url, {
       ...init,
       headers,
-      body: init.json !== undefined ? JSON.stringify(init.json) : (init.body as BodyInit | null | undefined),
+      body:
+        init.json !== undefined
+          ? JSON.stringify(init.json)
+          : (init.body as BodyInit | null | undefined),
     });
     if (res.status === 204) return undefined as T;
     const ctype = res.headers.get("content-type") ?? "";
@@ -96,7 +99,9 @@ export class ApiClient {
 
   // --- assets -------------------------------------------------------------
 
-  listAssets(params: { q?: string; asset_class?: string; cursor?: string | null; limit?: number } = {}) {
+  listAssets(
+    params: { q?: string; asset_class?: string; cursor?: string | null; limit?: number } = {},
+  ) {
     return this.request<PageOfAssetOut>("/v1/assets", { query: params });
   }
 

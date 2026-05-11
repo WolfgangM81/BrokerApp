@@ -35,9 +35,7 @@ We need a long-lived contract for the API:
     "instance": "/v1/assets/XYZ",
     "code": "asset.not_found",
     "request_id": "01J...",
-    "errors": [
-      { "field": "symbol", "message": "must be uppercase" }
-    ]
+    "errors": [{ "field": "symbol", "message": "must be uppercase" }]
   }
   ```
 - `code` is a stable machine identifier (`asset.not_found`, `validation.failed`,
@@ -49,8 +47,8 @@ We need a long-lived contract for the API:
 
 **+** Industry-standard error format → clients can adopt off-the-shelf handlers.
 **+** Path-based versioning is the most cache-, log-, and reverse-proxy-friendly
-       approach.
+approach.
 **−** Multiple major versions in parallel is some maintenance overhead — we
-       accept it when we get there.
+accept it when we get there.
 **−** `code` field is ours to govern; we keep them in `apps/api/src/api/errors.py`
-       to avoid sprawl.
+to avoid sprawl.

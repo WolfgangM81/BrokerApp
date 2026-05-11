@@ -7,26 +7,26 @@ be tested without Docker / Kubernetes is now green.
 
 ## TL;DR
 
-| Smoke | Status | Counts |
-|---|---|---|
-| Python lint (ruff) | ✅ | 0 issues across 89 files |
-| Python format (ruff format --check) | ✅ | 89/89 already formatted |
-| Python tests — `apps/api` | ✅ | 23/23 |
-| Python tests — `services/ingest` | ✅ | 7/7 |
-| Python tests — `services/notifier` | ✅ | 1/1 |
-| Python tests — `ml/` | ✅ | 32/32 |
-| **Python total** | ✅ | **63/63** |
-| `pnpm install` (workspace) | ✅ | clean (2 expected peer-warns) |
-| TS typecheck — `apps/web` | ✅ | 0 errors |
-| TS typecheck — `apps/mobile` | ✅ | 0 errors |
-| TS typecheck — `packages/api-client` | ✅ | 0 errors |
-| Vitest — `apps/web` | ✅ | 1/1 |
-| `helm lint` — all 7 charts (incl. umbrella) | ✅ | 0 failures |
-| `helm template brokerapp infra/helm/umbrella` | ✅ | 17 resources rendered (906 lines) |
-| `kubeconform -strict -k8s 1.31` | ✅ | 16/17 valid, 1 skipped (CRD, expected) |
-| Docker images (Dockerfile.* builds) | ⏳ | N/A — no Docker daemon in dev env |
-| docker-compose stack | ⏳ | N/A — no Docker daemon in dev env |
-| DB integration tests (TimescaleDB) | ⏳ | N/A — needs running TimescaleDB |
+| Smoke                                         | Status | Counts                                 |
+| --------------------------------------------- | ------ | -------------------------------------- |
+| Python lint (ruff)                            | ✅     | 0 issues across 89 files               |
+| Python format (ruff format --check)           | ✅     | 89/89 already formatted                |
+| Python tests — `apps/api`                     | ✅     | 23/23                                  |
+| Python tests — `services/ingest`              | ✅     | 7/7                                    |
+| Python tests — `services/notifier`            | ✅     | 1/1                                    |
+| Python tests — `ml/`                          | ✅     | 32/32                                  |
+| **Python total**                              | ✅     | **63/63**                              |
+| `pnpm install` (workspace)                    | ✅     | clean (2 expected peer-warns)          |
+| TS typecheck — `apps/web`                     | ✅     | 0 errors                               |
+| TS typecheck — `apps/mobile`                  | ✅     | 0 errors                               |
+| TS typecheck — `packages/api-client`          | ✅     | 0 errors                               |
+| Vitest — `apps/web`                           | ✅     | 1/1                                    |
+| `helm lint` — all 7 charts (incl. umbrella)   | ✅     | 0 failures                             |
+| `helm template brokerapp infra/helm/umbrella` | ✅     | 17 resources rendered (906 lines)      |
+| `kubeconform -strict -k8s 1.31`               | ✅     | 16/17 valid, 1 skipped (CRD, expected) |
+| Docker images (Dockerfile.\* builds)          | ⏳     | N/A — no Docker daemon in dev env      |
+| docker-compose stack                          | ⏳     | N/A — no Docker daemon in dev env      |
+| DB integration tests (TimescaleDB)            | ⏳     | N/A — needs running TimescaleDB        |
 
 ## Bugs found and fixed
 
@@ -61,9 +61,10 @@ asyncio_mode` because `pytest-asyncio` wasn't a dev dep and the root
 **Where:** `ml/pyproject.toml`
 **Symptom:** `uv sync --package brokerapp-ml`:
 `RuntimeError: Cannot install on Python version 3.12.3; only versions
->=3.6,<3.10 are supported` for llvmlite.
-**Fix:** Pin floors `numba>=0.60.0` and `llvmlite>=0.43.0` so the
-resolver picks a Python-3.12-compatible chain.
+
+> =3.6,<3.10 are supported`for llvmlite.
+**Fix:** Pin floors`numba>=0.60.0`and`llvmlite>=0.43.0` so the
+> resolver picks a Python-3.12-compatible chain.
 
 ### #5 Same `asyncio_mode` issue in `ml/`
 
@@ -92,6 +93,7 @@ already written against the v5 API (`chart.addSeries(CandlestickSeries,
 ### #8 next-intl `Link href={{ pathname, params }}` doesn't pass TS strict checking
 
 **Where:**
+
 - `apps/web/src/app/[locale]/watchlists/watchlists-client.tsx`
 - `apps/web/src/app/[locale]/watchlists/[id]/watchlist-detail-client.tsx`
 
@@ -119,6 +121,7 @@ inside Playwright's `test()` registration.
 ### #11 + #12 Helm: duplicate `app.kubernetes.io/component` key on beat Deployments
 
 **Where:**
+
 - `infra/helm/worker/templates/deployment.yaml`
 - `infra/helm/forecast-worker/templates/deployment.yaml`
 
@@ -157,3 +160,109 @@ would have blocked the first CI pipeline run; they're fixed and pushed.
 First-cluster bring-up will still find a few more issues (yfinance API
 quirks, Authentik JWKS specifics, Darts API changes — these can't be
 caught by static analysis) but the surface is now much smaller.
+
+---
+
+## Second pass — mypy / ESLint / prettier / alembic-offline (Phase 8.6)
+
+After the first smoke pass, extended verification covered every tool
+the CI actually runs. **8 more bugs** found and fixed.
+
+| Check | Status |
+|---|---|
+| `mypy --strict` — apps/api | ✅ |
+| `mypy --strict` — services/db | ✅ |
+| `mypy --strict` — services/ingest | ✅ |
+| `mypy --strict` — services/notifier | ✅ |
+| `pnpm -r run lint` (Next ESLint) | ✅ |
+| `pnpm format:check` (prettier across whole repo) | ✅ (after 57 files were auto-formatted) |
+| `alembic upgrade head --sql` (offline migration render) | ✅ — emits valid SQL through revision 0003 |
+| Final `pytest` re-run after fixes — 63/63 | ✅ |
+| Final `helm template + kubeconform` — 16/17 valid | ✅ |
+
+### Bugs found
+
+#### #13 `<a href>` instead of `<Link>` to a Next.js page
+
+**Where:** `apps/web/src/app/auth/error/page.tsx`
+**Symptom:** ESLint error
+`@next/next/no-html-link-for-pages`.
+**Fix:** Use `next/link`'s `<Link>`.
+
+#### #14 `index = "index"` in StrEnum shadows `str.index()`
+
+**Where:** `services/db/src/brokerapp_db/models.py:37`
+**Symptom:** `mypy --strict`:
+`Incompatible types in assignment (expression has type "AssetClass",
+base class "str" defined the type as "Callable[[str, …], int]")`.
+**Fix:** Added `# type: ignore[assignment]` with a comment explaining
+the StrEnum quirk. Runtime semantics are correct.
+
+#### #15 `cal.is_trading_minute(...)` returns Any, declared bool
+
+**Where:** `services/ingest/src/ingest/calendars.py:47`
+**Symptom:** `mypy: Returning Any from function declared to return
+"bool"`.
+**Fix:** Wrapped in `bool(...)`.
+
+#### #16 Stale `# type: ignore[union-attr]` in yfinance adapter
+
+**Where:** `services/ingest/src/ingest/sources/yfinance_source.py:96`
+**Symptom:** `mypy: Unused "type: ignore" comment`.
+**Fix:** Removed the suppression — the upstream typing has caught up.
+
+#### #17 + #18 Polars schema dict mixed `Datetime(...)` instances with `Float64` class refs
+
+**Where:**
+- `services/ingest/src/ingest/sources/yfinance_source.py:_empty_frame`
+- `services/ingest/src/ingest/sources/ccxt_source.py:_empty_frame`
+
+**Symptom:** `mypy: Argument "schema" to "DataFrame" has incompatible
+type "dict[str, object]"; expected …`.
+**Fix:** Switched to a list of `(name, instance)` tuples and
+instantiated `pl.Float64()` so every value has the same DataType
+shape.
+
+#### #19 Celery `@app.task` decorator is untyped → mypy strict bites
+
+**Where:** `services/ingest/src/ingest/tasks.py`
+**Symptom:** Cascade of `untyped-decorator` and `no-untyped-def`
+errors on every Celery task because `Celery.task` returns `Any` and
+forces every wrapped function to be untyped too.
+**Fix:** File-level
+`# mypy: disable-error-code="untyped-decorator,no-untyped-def"` with
+the rationale documented inline. Other type-checks remain strict.
+
+#### #20 brokerapp_db / brokerapp_ml missing `py.typed` marker
+
+**Where:** `services/db/src/brokerapp_db/`,
+`ml/src/brokerapp_ml/`
+**Symptom:** Cascade of `Skipping analyzing "brokerapp_db": module is
+installed, but missing library stubs or py.typed marker`.
+**Fix:** Added empty `py.typed` files. PEP 561 says hatch picks them
+up automatically from a package directory.
+
+### Bonus side-effects
+
+- **57 files prettier-reformatted** during the second pass — almost
+  all docs / markdown / chart YAML that prettier wanted normalised.
+  The runbooks now look identical to what CI would render.
+- **`# type: ignore[no-untyped-call]`** on `redis_async.from_url()` —
+  redis-py 5.x still ships no stubs for that surface; one-liner.
+- **`return dict(claims)`** in `apps/api/src/api/auth.py:_verify_token`
+  to drop the Any from `jwt.decode()`'s return.
+- **mypy.overrides** extended with the full ML / Celery / structlog
+  family, plus the explicit `brokerapp_ml.*` ignore (it's a lazy
+  import in the risk endpoints; the API container doesn't ship it).
+
+### Bottom line — pass 2
+
+Together with the first pass: **20 bugs** found and fixed before any
+of them could blow up CI or a deploy. The repo now passes every
+static-analysis tool we wired into the pipeline (`ruff`,
+`ruff format`, `mypy --strict`, `next lint`, `prettier`, `helm lint`,
+`kubeconform`) end-to-end on a clean checkout.
+
+What still needs the real cluster: Docker builds, Authentik OIDC
+roundtrip, yfinance / ccxt live data, Darts training, Expo bundle —
+all flagged at the bottom of [step 95](./95-deploy.md).

@@ -32,9 +32,7 @@ export default function WatchlistDetail() {
           renderItem={({ item }) => (
             <View style={styles.row}>
               <Text style={styles.id}>{item.asset_id.slice(0, 8)}…</Text>
-              <Text style={styles.subtitle}>
-                {new Date(item.added_at).toLocaleDateString()}
-              </Text>
+              <Text style={styles.subtitle}>{new Date(item.added_at).toLocaleDateString()}</Text>
             </View>
           )}
         />

@@ -44,14 +44,7 @@
       "groupName": "gitlab-ci tooling"
     },
     {
-      "matchPackageNames": [
-        "fastapi",
-        "pydantic",
-        "sqlalchemy",
-        "next",
-        "react",
-        "react-dom"
-      ],
+      "matchPackageNames": ["fastapi", "pydantic", "sqlalchemy", "next", "react", "react-dom"],
       "groupName": "framework majors",
       "matchUpdateTypes": ["major"]
     }

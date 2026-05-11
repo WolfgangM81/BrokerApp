@@ -154,10 +154,10 @@ validate:k8s:
     - helm dependency update infra/helm/umbrella
     - helm template brokerapp infra/helm/umbrella --namespace brokerapp > rendered.yaml
     - kubeconform -strict -kubernetes-version "${K8S_VERSION}"
-        -summary -verbose
-        -schema-location default
-        -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
-        rendered.yaml
+      -summary -verbose
+      -schema-location default
+      -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+      rendered.yaml
 
 # ============================================================================
 # TEST
@@ -252,10 +252,10 @@ build:api:
       changes: [apps/api/**/*, services/db/**/*, infra/docker/Dockerfile.api, pyproject.toml]
   script:
     - /kaniko/executor
-        --context "$CI_PROJECT_DIR"
-        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.api"
-        --destination "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA"
-        --destination "$CI_REGISTRY_IMAGE/api:latest"
+      --context "$CI_PROJECT_DIR"
+      --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.api"
+      --destination "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA"
+      --destination "$CI_REGISTRY_IMAGE/api:latest"
 
 build:migrate:
   extends: .build-image
@@ -264,10 +264,10 @@ build:migrate:
       changes: [services/db/**/*, infra/docker/Dockerfile.migrate, pyproject.toml]
   script:
     - /kaniko/executor
-        --context "$CI_PROJECT_DIR"
-        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.migrate"
-        --destination "$CI_REGISTRY_IMAGE/migrate:$CI_COMMIT_SHORT_SHA"
-        --destination "$CI_REGISTRY_IMAGE/migrate:latest"
+      --context "$CI_PROJECT_DIR"
+      --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.migrate"
+      --destination "$CI_REGISTRY_IMAGE/migrate:$CI_COMMIT_SHORT_SHA"
+      --destination "$CI_REGISTRY_IMAGE/migrate:latest"
 
 build:web:
   extends: .build-image
@@ -276,22 +276,23 @@ build:web:
       changes: [apps/web/**/*, packages/**/*, infra/docker/Dockerfile.web, pnpm-lock.yaml]
   script:
     - /kaniko/executor
-        --context "$CI_PROJECT_DIR"
-        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.web"
-        --destination "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHORT_SHA"
-        --destination "$CI_REGISTRY_IMAGE/web:latest"
+      --context "$CI_PROJECT_DIR"
+      --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.web"
+      --destination "$CI_REGISTRY_IMAGE/web:$CI_COMMIT_SHORT_SHA"
+      --destination "$CI_REGISTRY_IMAGE/web:latest"
 
 build:worker:
   extends: .build-image
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      changes: [services/ingest/**/*, services/db/**/*, infra/docker/Dockerfile.worker, pyproject.toml]
+      changes:
+        [services/ingest/**/*, services/db/**/*, infra/docker/Dockerfile.worker, pyproject.toml]
   script:
     - /kaniko/executor
-        --context "$CI_PROJECT_DIR"
-        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.worker"
-        --destination "$CI_REGISTRY_IMAGE/worker:$CI_COMMIT_SHORT_SHA"
-        --destination "$CI_REGISTRY_IMAGE/worker:latest"
+      --context "$CI_PROJECT_DIR"
+      --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.worker"
+      --destination "$CI_REGISTRY_IMAGE/worker:$CI_COMMIT_SHORT_SHA"
+      --destination "$CI_REGISTRY_IMAGE/worker:latest"
 
 build:forecast:
   extends: .build-image
@@ -305,10 +306,10 @@ build:forecast:
         - pyproject.toml
   script:
     - /kaniko/executor
-        --context "$CI_PROJECT_DIR"
-        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.forecast"
-        --destination "$CI_REGISTRY_IMAGE/forecast:$CI_COMMIT_SHORT_SHA"
-        --destination "$CI_REGISTRY_IMAGE/forecast:latest"
+      --context "$CI_PROJECT_DIR"
+      --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.forecast"
+      --destination "$CI_REGISTRY_IMAGE/forecast:$CI_COMMIT_SHORT_SHA"
+      --destination "$CI_REGISTRY_IMAGE/forecast:latest"
 
 # ============================================================================
 # DEPLOY (only on main; helm upgrade)
@@ -338,14 +339,14 @@ deploy:k8s:
     - helm dependency update infra/helm/umbrella
   script:
     - helm upgrade --install brokerapp infra/helm/umbrella
-        --namespace brokerapp
-        --create-namespace
-        --set api.image.tag=$CI_COMMIT_SHORT_SHA
-        --set web.image.tag=$CI_COMMIT_SHORT_SHA
-        --set worker.image.tag=$CI_COMMIT_SHORT_SHA
-        --set forecastWorker.image.tag=$CI_COMMIT_SHORT_SHA
-        --set db.migration.image.tag=$CI_COMMIT_SHORT_SHA
-        --wait --timeout 10m
+      --namespace brokerapp
+      --create-namespace
+      --set api.image.tag=$CI_COMMIT_SHORT_SHA
+      --set web.image.tag=$CI_COMMIT_SHORT_SHA
+      --set worker.image.tag=$CI_COMMIT_SHORT_SHA
+      --set forecastWorker.image.tag=$CI_COMMIT_SHORT_SHA
+      --set db.migration.image.tag=$CI_COMMIT_SHORT_SHA
+      --wait --timeout 10m
   environment:
     name: production
     url: https://brokerapp.orbiter

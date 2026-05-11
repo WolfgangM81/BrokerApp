@@ -6,13 +6,13 @@ Per node — repeat for `m75q-01`, `m75q-02`, `m75q-03`.
 
 Boot the m75q, hit **F1** during the Lenovo splash:
 
-| Setting | Value |
-|---|---|
-| Boot → Secure Boot | Disabled (k8s container runtimes need cgroup v2; SB sometimes blocks the kernel modules) |
-| Boot → Boot Mode | UEFI |
-| Power → After Power Loss | Power On |
-| Power → Wake on LAN | Enabled |
-| CPU → SVM Mode | Enabled (lets nested VMs / cri-o use kvm) |
+| Setting                  | Value                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| Boot → Secure Boot       | Disabled (k8s container runtimes need cgroup v2; SB sometimes blocks the kernel modules) |
+| Boot → Boot Mode         | UEFI                                                                                     |
+| Power → After Power Loss | Power On                                                                                 |
+| Power → Wake on LAN      | Enabled                                                                                  |
+| CPU → SVM Mode           | Enabled (lets nested VMs / cri-o use kvm)                                                |
 
 Save + reboot.
 
@@ -20,13 +20,13 @@ Save + reboot.
 
 Use the **server** (no GUI) ISO. During the installer:
 
-| Prompt | Answer |
-|---|---|
-| Hostname | `m75q-01` (`-02`, `-03` on the others) |
-| Username | `wolfgangm` (or your standard homelab admin) |
-| OpenSSH | Enable |
-| Snaps | None |
-| Disk | Use entire disk, **no LVM** (Longhorn manages its own volumes) |
+| Prompt   | Answer                                                         |
+| -------- | -------------------------------------------------------------- |
+| Hostname | `m75q-01` (`-02`, `-03` on the others)                         |
+| Username | `wolfgangm` (or your standard homelab admin)                   |
+| OpenSSH  | Enable                                                         |
+| Snaps    | None                                                           |
+| Disk     | Use entire disk, **no LVM** (Longhorn manages its own volumes) |
 
 After first boot, log in and update:
 
@@ -55,7 +55,7 @@ network:
   version: 2
   ethernets:
     enp1s0:
-      addresses: [192.168.10.11/24]   # .12 on node 2, .13 on node 3
+      addresses: [192.168.10.11/24] # .12 on node 2, .13 on node 3
       routes:
         - to: default
           via: 192.168.10.1
@@ -119,6 +119,7 @@ done
 ```
 
 You should see:
+
 - Hostname matches
 - ~30 GiB free RAM
 - ~250 GiB free on `/`

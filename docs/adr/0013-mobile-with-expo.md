@@ -40,9 +40,9 @@ We pick the lighter path.
 
 **+** Shared API client → no schema drift between web and mobile.
 **+** Expo's managed runtime makes builds reproducible without a Mac
-       in the loop (EAS Build handles the iOS side).
+in the loop (EAS Build handles the iOS side).
 **−** Some native modules (e.g. WatchKit complications) require
-       prebuild + custom config plugins, which we don't have yet.
-       Acceptable for the alerts / read-only use case.
+prebuild + custom config plugins, which we don't have yet.
+Acceptable for the alerts / read-only use case.
 **−** Two Authentik applications (web + mobile) to keep in sync.
-       Mitigated by documenting the second one in `apps/mobile/README.md`.
+Mitigated by documenting the second one in `apps/mobile/README.md`.

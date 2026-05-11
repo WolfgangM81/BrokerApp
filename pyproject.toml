@@ -96,6 +96,20 @@ module = [
   "darts.*",
   "shap.*",
   "exchange_calendars.*",
+  "celery.*",
+  "kombu.*",
+  "lightgbm.*",
+  "xgboost.*",
+  "statsmodels.*",
+  "optuna.*",
+  "mlflow.*",
+  "ulid.*",
+  "structlog.*",
+  # Lazily imported inside apps/api/src/api/routes/risk.py because the
+  # API container intentionally does not ship brokerapp-ml (would pull
+  # ~2 GB of ML deps). At type-check time the package may not be
+  # installed in the API's venv.
+  "brokerapp_ml.*",
 ]
 ignore_missing_imports = true
 

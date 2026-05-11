@@ -33,6 +33,7 @@ kubectl get storageclass
 ```
 
 You should see:
+
 - `longhorn-manager` (3 pods, one per node)
 - `longhorn-driver-deployer`, `csi-*` pods all `Running`
 - `longhorn` StorageClass marked `(default)`

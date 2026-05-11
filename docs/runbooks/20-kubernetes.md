@@ -1,6 +1,7 @@
 # Step 20 — Kubernetes (k3s)
 
 We use [k3s](https://k3s.io/) because:
+
 - single binary, no etcd-by-hand,
 - Traefik comes preinstalled (we'll just configure it),
 - ServiceLB makes a homelab `LoadBalancer` reachable on every node IP.

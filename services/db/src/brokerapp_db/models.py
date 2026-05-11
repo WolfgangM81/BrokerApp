@@ -34,7 +34,11 @@ class AssetClass(enum.StrEnum):
 
     stock = "stock"
     etf = "etf"
-    index = "index"
+    # `index` shadows the inherited str.index method; mypy strict mode
+    # flags the StrEnum assignment. The runtime semantics are correct
+    # (StrEnum members override base methods on instances) — silence the
+    # checker rather than rename a domain term.
+    index = "index"  # type: ignore[assignment]
     crypto = "crypto"
     fx = "fx"
     commodity = "commodity"

@@ -22,6 +22,7 @@ helm upgrade --install kps prometheus-community/kube-prometheus-stack \
 ```
 
 This installs:
+
 - Prometheus (15-day retention, 50 GiB on Longhorn)
 - Alertmanager (routes via webhook → `https://ntfy.orbiter/brokerapp-alerts`)
 - Grafana (Ingress `grafana.brokerapp.orbiter`)
@@ -67,14 +68,14 @@ Loki. It parses our `structlog` JSON lines and tags them with `level`,
 
 Grafana → **Settings** (gear icon) → **Data sources** → **Add data source**:
 
-| Field | Value |
-|---|---|
-| Type | Loki |
-| Name | `loki` |
-| URL | `http://loki-gateway.observability.svc.cluster.local` |
-| Default | ✅ |
+| Field   | Value                                                 |
+| ------- | ----------------------------------------------------- |
+| Type    | Loki                                                  |
+| Name    | `loki`                                                |
+| URL     | `http://loki-gateway.observability.svc.cluster.local` |
+| Default | ✅                                                    |
 
-Click **Save & test** — should show *"Data source connected"*.
+Click **Save & test** — should show _"Data source connected"_.
 
 ## 50.5 Verify the BrokerApp ServiceMonitor is being scraped
 
@@ -113,6 +114,7 @@ open https://grafana.brokerapp.orbiter/
 ```
 
 Log in with `admin` / the password from §50.2. Default dashboards:
+
 - Kubernetes / Compute Resources / Cluster
 - Kubernetes / Compute Resources / Namespace (Pods)
 - Node Exporter / Nodes
