@@ -222,7 +222,8 @@ GitLab CI/CD:
 | **4** | Operations — Helm to cluster, monitoring, alerting, backups ✅ |
 | **5** | Advanced ML — TFT/N-HiTS, sentiment, macro, drift, SHAP ✅ |
 | **6** | Risk + Portfolio — sizing, multi-asset risk, paper trading polish ✅ |
-| **7** | Mobile — Expo / React Native (current) |
+| **7** | Mobile — Expo / React Native ✅ |
+| **8** | Hardening — audit fixes, dedicated migrate/forecast images, cert-manager, server auth(), DB integration tests (current) |
 
 We do not skip phases. Each phase ends with an explicit acceptance check.
 

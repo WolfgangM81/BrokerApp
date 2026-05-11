@@ -125,6 +125,9 @@ lint:helm:
     - helm lint infra/helm/api
     - helm lint infra/helm/web
     - helm lint infra/helm/worker
+    - helm lint infra/helm/forecast-worker
+    - helm lint infra/helm/db
+    - helm lint infra/helm/backup
     - helm dependency update infra/helm/umbrella
     - helm lint infra/helm/umbrella
 
@@ -244,6 +247,9 @@ test:web:
 
 build:api:
   extends: .build-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: [apps/api/**/*, services/db/**/*, infra/docker/Dockerfile.api, pyproject.toml]
   script:
     - /kaniko/executor
         --context "$CI_PROJECT_DIR"
@@ -251,8 +257,23 @@ build:api:
         --destination "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHORT_SHA"
         --destination "$CI_REGISTRY_IMAGE/api:latest"
 
+build:migrate:
+  extends: .build-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: [services/db/**/*, infra/docker/Dockerfile.migrate, pyproject.toml]
+  script:
+    - /kaniko/executor
+        --context "$CI_PROJECT_DIR"
+        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.migrate"
+        --destination "$CI_REGISTRY_IMAGE/migrate:$CI_COMMIT_SHORT_SHA"
+        --destination "$CI_REGISTRY_IMAGE/migrate:latest"
+
 build:web:
   extends: .build-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: [apps/web/**/*, packages/**/*, infra/docker/Dockerfile.web, pnpm-lock.yaml]
   script:
     - /kaniko/executor
         --context "$CI_PROJECT_DIR"
@@ -262,12 +283,32 @@ build:web:
 
 build:worker:
   extends: .build-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes: [services/ingest/**/*, services/db/**/*, infra/docker/Dockerfile.worker, pyproject.toml]
   script:
     - /kaniko/executor
         --context "$CI_PROJECT_DIR"
         --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.worker"
         --destination "$CI_REGISTRY_IMAGE/worker:$CI_COMMIT_SHORT_SHA"
         --destination "$CI_REGISTRY_IMAGE/worker:latest"
+
+build:forecast:
+  extends: .build-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - services/forecast/**/*
+        - services/db/**/*
+        - ml/**/*
+        - infra/docker/Dockerfile.forecast
+        - pyproject.toml
+  script:
+    - /kaniko/executor
+        --context "$CI_PROJECT_DIR"
+        --dockerfile "$CI_PROJECT_DIR/infra/docker/Dockerfile.forecast"
+        --destination "$CI_REGISTRY_IMAGE/forecast:$CI_COMMIT_SHORT_SHA"
+        --destination "$CI_REGISTRY_IMAGE/forecast:latest"
 
 # ============================================================================
 # DEPLOY (only on main; helm upgrade)
@@ -277,14 +318,24 @@ deploy:k8s:
   stage: deploy
   image: $HELM_IMAGE
   extends: .only-main
+  # All image-build jobs must succeed, but they're rules:changes-gated, so
+  # missing artifacts on a docs-only commit don't block the deploy.
   needs:
-    - build:api
-    - build:web
-    - build:worker
+    - job: build:api
+      optional: true
+    - job: build:migrate
+      optional: true
+    - job: build:web
+      optional: true
+    - job: build:worker
+      optional: true
+    - job: build:forecast
+      optional: true
   before_script:
     - apk add --no-cache bash gettext
     - mkdir -p ~/.kube && echo "$KUBE_CONFIG" | base64 -d > ~/.kube/config
     - chmod 600 ~/.kube/config
+    - helm dependency update infra/helm/umbrella
   script:
     - helm upgrade --install brokerapp infra/helm/umbrella
         --namespace brokerapp
@@ -292,7 +343,9 @@ deploy:k8s:
         --set api.image.tag=$CI_COMMIT_SHORT_SHA
         --set web.image.tag=$CI_COMMIT_SHORT_SHA
         --set worker.image.tag=$CI_COMMIT_SHORT_SHA
-        --wait --timeout 5m
+        --set forecastWorker.image.tag=$CI_COMMIT_SHORT_SHA
+        --set db.migration.image.tag=$CI_COMMIT_SHORT_SHA
+        --wait --timeout 10m
   environment:
     name: production
     url: https://brokerapp.orbiter

@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fworker.fullname" . }}
+  labels: {{- include "fworker.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "fworker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "fworker.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: forecast-worker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - celery
+            - -A
+            - forecast.celery_app:celery_app
+            - worker
+            - --loglevel=INFO
+            - --concurrency={{ .Values.concurrency }}
+            - --queues=forecast
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- if .Values.envFromSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret }}
+          {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - forecast.celery_app:celery_app
+                - inspect
+                - ping
+                - -d
+                - "celery@$HOSTNAME"
+            initialDelaySeconds: 60
+            periodSeconds: 90
+            timeoutSeconds: 15
+{{- if .Values.beat.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fworker.fullname" . }}-beat
+  labels:
+    {{- include "fworker.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forecast-beat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "fworker.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: forecast-beat
+  template:
+    metadata:
+      labels:
+        {{- include "fworker.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: forecast-beat
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: beat
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - celery
+            - -A
+            - forecast.celery_app:celery_app
+            - beat
+            - --loglevel=INFO
+          resources: {{- toYaml .Values.beat.resources | nindent 12 }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- if .Values.envFromSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.envFromSecret }}
+          {{- end }}
+{{- end }}

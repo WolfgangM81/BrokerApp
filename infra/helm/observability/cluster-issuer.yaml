@@ -1,0 +1,51 @@
+# Cluster-wide self-signed CA for internal `.orbiter` certificates.
+#
+# Apply once per cluster after cert-manager is installed:
+#   helm repo add jetstack https://charts.jetstack.io
+#   helm install cert-manager jetstack/cert-manager \
+#     --namespace cert-manager --create-namespace \
+#     --set installCRDs=true
+#   kubectl apply -f infra/helm/observability/cluster-issuer.yaml
+#
+# The Ingresses use `cert-manager.io/cluster-issuer: brokerapp-internal-ca`
+# to get a signed cert from this CA. Because the cluster is reached over
+# ZeroTier only, we don't need ACME / Let's Encrypt; the CA's root cert
+# can be trusted explicitly on each client device.
+#
+# To distribute the CA root to clients:
+#   kubectl -n cert-manager get secret brokerapp-internal-ca-key-pair \
+#     -o jsonpath='{.data.tls\.crt}' | base64 -d > brokerapp-ca.crt
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: brokerapp-internal-selfsigned
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: brokerapp-internal-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: brokerapp-internal-ca
+  secretName: brokerapp-internal-ca-key-pair
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  duration: 87600h  # 10 years
+  renewBefore: 720h
+  issuerRef:
+    name: brokerapp-internal-selfsigned
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: brokerapp-internal-ca
+spec:
+  ca:
+    secretName: brokerapp-internal-ca-key-pair

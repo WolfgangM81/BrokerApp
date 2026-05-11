@@ -1,10 +1,9 @@
 """Alembic environment.
 
-Phase-0 decision (ADR-0008 placeholder, refined in commit log): we use
-`autogenerate` for ordinary tables and apply a **post-processing hook**
-that injects TimescaleDB-specific statements (hypertable creation,
-continuous aggregates, retention policies) where models opt in via the
-table's `info` dict.
+See ADR-0014. We use `--autogenerate` for ordinary tables and apply a
+**post-processing hook** that injects TimescaleDB-specific statements
+(hypertable creation, continuous aggregates, retention policies) where
+models opt in via the table's `info` dict.
 
 A model can mark its table as a hypertable like so:
 
@@ -35,6 +34,11 @@ from typing import Any
 from alembic import context
 from alembic.operations import ops
 from brokerapp_db.base import metadata as target_metadata
+
+# Side-effect import: registers every Table on `target_metadata`. Without
+# this, Alembic's autogenerate sees an empty MetaData and would propose
+# dropping every existing table.
+from brokerapp_db import models as _models
 from sqlalchemy import engine_from_config, pool
 
 # ---------------------------------------------------------------------------

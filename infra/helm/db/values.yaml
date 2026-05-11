@@ -16,14 +16,14 @@ resources:
     memory: 8Gi
 
 # The migration Job runs `alembic upgrade head` against the DB and exits.
+# It uses the dedicated brokerapp-migrate image (see Dockerfile.migrate)
+# which contains services/db + alembic, but not FastAPI/Celery/ML deps.
 migration:
   image:
-    repository: gitlab.orbiter:5050/wolfgangm81/brokerapp/api
+    repository: gitlab.orbiter:5050/wolfgangm81/brokerapp/migrate
     tag: latest
   command:
     - alembic
-    - -c
-    - /app/services/db/alembic.ini
     - upgrade
     - head
 

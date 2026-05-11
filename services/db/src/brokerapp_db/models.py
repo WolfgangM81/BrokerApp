@@ -123,14 +123,9 @@ class Asset(Base):
 class Bar(Base):
     __tablename__ = "bars"
     __table_args__ = (
-        # Composite PK: (asset_id, time, granularity). Hypertable partition
-        # column is `time`; uniqueness enforces idempotent ingest.
-        UniqueConstraint(
-            "asset_id",
-            "time",
-            "granularity",
-            name="uq_bars_asset_time_granularity",
-        ),
+        # Composite PK is declared inline via `primary_key=True` on each
+        # column; that PK is also the idempotency key for ingest upserts.
+        # No separate UniqueConstraint — it would create a redundant index.
         Index("ix_bars_asset_time", "asset_id", "time"),
         # Bars live in the `market` schema so they can be backed up / pruned
         # independently from app metadata. The `info["timescale"]` block is

@@ -1,13 +1,22 @@
 # Umbrella overrides per sub-chart go under the matching alias. Real
 # secrets land via the GitLab CI pipeline (Vault → CI variables → k8s
 # Secret) — see ADR-0010 + .gitlab-ci.yml.
+#
+# Image tags are overridden by CI's `helm upgrade --set api.image.tag=$SHA`
+# (etc.); see the deploy:k8s job. The migration image tag is wired the
+# same way to avoid the race that Phase 8 fixed (a "latest" migration
+# image running against a freshly built API of a different SHA).
 
 db:
   enabled: true
   storage:
     size: 50Gi
+  migration:
+    image:
+      tag: "latest"
 
 api:
+  enabled: true
   replicaCount: 2
   image:
     tag: "latest"
@@ -15,14 +24,24 @@ api:
     enabled: true
 
 web:
+  enabled: true
   replicaCount: 2
   image:
     tag: "latest"
 
 worker:
+  enabled: true
   replicaCount: 2
   beat:
-    enabled: true
+    enabled: true  # ingest beat: nightly EOD + intraday refresh
+  image:
+    tag: "latest"
+
+forecastWorker:
+  enabled: true
+  replicaCount: 1
+  beat:
+    enabled: true  # forecast beat: nightly retrain dispatch
   image:
     tag: "latest"
 

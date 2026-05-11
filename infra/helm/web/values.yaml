@@ -16,6 +16,7 @@ ingress:
   enabled: true
   className: traefik
   host: brokerapp.orbiter
+  clusterIssuer: brokerapp-internal-ca
   tls:
     enabled: true
     secretName: brokerapp-web-tls

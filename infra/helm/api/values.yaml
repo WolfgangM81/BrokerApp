@@ -16,6 +16,9 @@ ingress:
   enabled: true
   className: traefik
   host: api.brokerapp.orbiter
+  # cert-manager auto-issues a TLS cert from the internal CA (see
+  # infra/helm/observability/cluster-issuer.yaml).
+  clusterIssuer: brokerapp-internal-ca
   tls:
     enabled: true
     secretName: brokerapp-api-tls

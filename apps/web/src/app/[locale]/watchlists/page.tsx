@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { requireSession } from "@/lib/require-session";
 import { WatchlistsClient } from "./watchlists-client";
 
 export default async function WatchlistsPage({
@@ -8,5 +9,6 @@ export default async function WatchlistsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  await requireSession();
   return <WatchlistsClient />;
 }

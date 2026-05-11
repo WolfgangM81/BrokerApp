@@ -1,28 +1,38 @@
 apiVersion: v2
 name: brokerapp
-description: BrokerApp umbrella chart — bundles db, api, web, worker, backup
+description: BrokerApp umbrella chart — db, api, web, ingest-worker, forecast-worker, backup
 type: application
-version: 0.2.0
-appVersion: "0.2.0"
+version: 0.3.0
+appVersion: "0.3.0"
 
 dependencies:
   - name: brokerapp-db
     alias: db
     version: 0.1.0
     repository: "file://../db"
+    condition: db.enabled
   - name: brokerapp-api
     alias: api
     version: 0.1.0
     repository: "file://../api"
+    condition: api.enabled
   - name: brokerapp-web
     alias: web
     version: 0.1.0
     repository: "file://../web"
+    condition: web.enabled
   - name: brokerapp-worker
     alias: worker
     version: 0.1.0
     repository: "file://../worker"
+    condition: worker.enabled
+  - name: brokerapp-forecast-worker
+    alias: forecastWorker
+    version: 0.1.0
+    repository: "file://../forecast-worker"
+    condition: forecastWorker.enabled
   - name: brokerapp-backup
     alias: backup
     version: 0.1.0
     repository: "file://../backup"
+    condition: backup.enabled

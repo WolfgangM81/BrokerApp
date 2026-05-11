@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { requireSession } from "@/lib/require-session";
 import { AssetDetailClient } from "./asset-detail-client";
 
 export default async function AssetDetailPage({
@@ -8,5 +9,6 @@ export default async function AssetDetailPage({
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
+  await requireSession();
   return <AssetDetailClient id={id} />;
 }

@@ -1,0 +1,9 @@
+apiVersion: v2
+name: brokerapp-forecast-worker
+description: BrokerApp Celery worker consuming the `forecast` queue
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords: [brokerapp, worker, celery, forecast, ml]
+maintainers:
+  - name: brokerapp

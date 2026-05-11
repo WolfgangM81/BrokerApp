@@ -22,6 +22,12 @@ from api.auth import current_user
 from api.db import get_session
 from api.errors import not_found
 
+# brokerapp_ml is intentionally NOT a top-level dependency of the API:
+# pulling in the full ML stack (LightGBM, XGBoost, statsmodels, MLflow,
+# Darts/torch, ta-lib, ...) would balloon the API container from ~150 MB
+# to ~2 GB. The risk-calculator functions are pure-Python so the lazy
+# import is cheap at request time and free at startup.
+
 router = APIRouter(prefix="/v1", tags=["risk"])
 
 
@@ -92,7 +98,7 @@ async def kelly(
     payload: KellyRequest,
     _user: Annotated[User, Depends(current_user)],
 ) -> SizingResponse:
-    from brokerapp_ml.risk.sizing import kelly_fraction  # noqa: PLC0415  optional dep
+    from brokerapp_ml.risk.sizing import kelly_fraction  # noqa: PLC0415  see top-of-file note
 
     return SizingResponse(
         fraction=kelly_fraction(

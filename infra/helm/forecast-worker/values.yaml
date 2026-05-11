@@ -1,0 +1,47 @@
+replicaCount: 1
+
+image:
+  repository: gitlab.orbiter:5050/wolfgangm81/brokerapp/forecast
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: gitlab-registry
+
+concurrency: 2
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 8Gi  # TFT / N-HiTS need headroom
+
+env:
+  CELERYD_LOG_LEVEL: INFO
+
+envFromSecret: brokerapp-forecast-worker-secrets
+
+# Beat is owned by this chart (not by the ingest worker) because the
+# nightly retrain schedule lives in forecast.celery_app.beat_schedule.
+beat:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]

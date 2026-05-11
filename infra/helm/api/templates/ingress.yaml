@@ -4,6 +4,10 @@ kind: Ingress
 metadata:
   name: {{ include "api.fullname" . }}
   labels: {{- include "api.labels" . | nindent 4 }}
+  {{- if .Values.ingress.clusterIssuer }}
+  annotations:
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer | quote }}
+  {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}

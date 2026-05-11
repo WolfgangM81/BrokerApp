@@ -10,11 +10,32 @@ and risk-aware decision metrics.
 
 ## Status
 
-**Phase 1 — Data backbone.** SQLAlchemy models, Alembic migrations
-(TimescaleDB hypertable), Authentik-OIDC auth, RFC 7807 errors,
-`/v1/assets`, `/v1/assets/{id}/bars`, `/v1/watchlists` (member-add
-triggers Celery backfill), yfinance + ccxt adapters, exchange-calendar
-gating, idempotent upserts. Phase 0 (foundation) is shipped.
+**All code phases (0–7) are in. Phase 8 (Hardening) is the last commit
+before cluster bring-up.** What ships:
+
+- **Foundation (0)** monorepo, CI/CD, lint/type/format toolchain
+- **Data (1)** TimescaleDB hypertable, yfinance + ccxt ingest,
+  Authentik-OIDC, RFC-7807 errors, `/v1/*` endpoints
+- **UI (2)** Next.js 15, German default with English fallback
+  (next-intl), TradingView Lightweight Charts
+- **Forecast (3)** Naive / ARIMA / LightGBM with mandatory
+  walk-forward backtests (ADR-0006)
+- **Operations (4)** Helm charts for db/api/web/worker/forecast/backup,
+  kube-prometheus-stack + Loki values, age-encrypted nightly backups
+  with weekly restore-test
+- **Advanced ML (5)** Darts (TFT / N-HiTS), FRED macro, sentiment stub
+  (FinBERT swap-ready), ensembles, TreeSHAP, PSI/KL drift, Optuna
+- **Risk + Portfolio (6)** Kelly / fixed-fractional / vol-target
+  sizing, ATR + percentage stops, Sharpe / Sortino / VaR / CVaR /
+  max-DD, paper-portfolio summary
+- **Mobile (7)** Expo scaffold reusing the typed API client
+- **Hardening (8)** dedicated `migrate` + `forecast` images, missing
+  forecast-worker Helm chart, cert-manager internal CA, server-side
+  `auth()` guards on every page, DB integration test suite, audit fixes
+
+The repo is ready for the first `helm upgrade` against the homelab
+cluster. See [`docs/runbooks/restore.md`](docs/runbooks/restore.md)
+and the ADRs in [`docs/adr/`](docs/adr/).
 
 ## Architecture (high-level)
 
@@ -34,14 +55,18 @@ for the full picture and decisions.
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui, TanStack Query, TradingView Lightweight Charts |
+| Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui, TanStack Query, TradingView Lightweight Charts, next-intl (DE/EN) |
+| Mobile   | Expo 52 + expo-router, expo-auth-session (OIDC), expo-secure-store, expo-notifications |
 | Backend  | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic |
-| Workers  | Celery + Redis, Celery Beat |
-| ML       | LightGBM/XGBoost, Darts/pytorch-forecasting (Phase 5), MLflow, Optuna, SHAP, vectorbt |
-| Data     | TimescaleDB (hypertables + continuous aggregates), Redis, MinIO |
-| Auth     | Authentik (OIDC) — verified via JWKS in API |
-| Infra    | k8s (Homelab, 3× Lenovo m75q), Helm, Traefik, Longhorn, kube-prometheus-stack |
-| CI/CD    | GitLab CI/CD → GitLab Container Registry → kubectl/helm |
+| Workers  | Celery + Redis, Celery Beat (separate `ingest` and `forecast` queues) |
+| ML       | Polars, LightGBM, XGBoost, statsmodels, Darts (TFT / N-HiTS), MLflow, Optuna, SHAP, TA-Lib |
+| Macro / sentiment | FRED CSV, lexicon-based sentiment stub (FinBERT swap-ready) |
+| Risk     | Sharpe / Sortino / VaR / CVaR / max-DD, Kelly / fixed-fractional / vol-target, ATR + pct stops |
+| Data     | TimescaleDB (hypertable + continuous aggregates), Redis, MinIO |
+| Auth     | Authentik (OIDC), JWKS-verified in API; `X-Internal-Token` for worker → API |
+| Infra    | k8s (Homelab, 3× Lenovo m75q), Helm umbrella, Traefik, Longhorn, cert-manager, kube-prometheus-stack, Loki |
+| CI/CD    | GitLab CI/CD → GitLab Container Registry (`gitlab.orbiter:5050`) → Helm upgrade |
+| Backups  | nightly `pg_dump` + age-encrypted upload to MinIO, weekly restore-test CronJob (ADR-0010) |
 
 ## Repository layout
 

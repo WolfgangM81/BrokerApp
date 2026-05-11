@@ -1,0 +1,51 @@
+# syntax=docker/dockerfile:1.10
+# Migration image — runs `alembic upgrade head` against TimescaleDB.
+#
+# Built separately from the API image because the API image deliberately
+# does not ship services/db (see ADR-0014). The job that runs this image
+# is created by the brokerapp-db Helm chart as a post-install/post-upgrade
+# hook.
+#
+# Build context is the repo root.
+# Build:  docker build -f infra/docker/Dockerfile.migrate -t brokerapp-migrate .
+
+ARG PYTHON_VERSION=3.12-slim-bookworm
+
+FROM python:${PYTHON_VERSION} AS base
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+WORKDIR /app
+
+COPY --from=ghcr.io/astral-sh/uv:0.4.30 /uv /usr/local/bin/uv
+
+# ---------- builder ----------
+FROM base AS builder
+
+COPY pyproject.toml /app/pyproject.toml
+COPY services/db/pyproject.toml /app/services/db/pyproject.toml
+COPY services/db/src /app/services/db/src
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv venv /app/.venv && \
+    uv pip install --python /app/.venv/bin/python "/app/services/db[sync]"
+
+# ---------- runtime ----------
+FROM python:${PYTHON_VERSION} AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/app/.venv/bin:${PATH}"
+WORKDIR /app
+
+RUN groupadd --system --gid 1000 brokerapp && \
+    useradd  --system --uid 1000 --gid brokerapp --no-create-home brokerapp
+
+COPY --from=builder /app/.venv /app/.venv
+COPY services/db /app/services/db
+
+USER brokerapp
+WORKDIR /app/services/db
+
+# The Helm Job overrides the command; this is the sensible default.
+CMD ["alembic", "upgrade", "head"]

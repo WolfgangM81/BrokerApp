@@ -18,3 +18,4 @@ for the meta-process.
 | [0011](./0011-slos-and-performance-targets.md) | SLOs and performance targets | Accepted |
 | [0012](./0012-advanced-ml-stack.md) | Advanced-ML stack — Darts, FRED, FinBERT-later, SHAP, Optuna | Accepted |
 | [0013](./0013-mobile-with-expo.md) | Mobile client — Expo (React Native) sharing the typed API client | Accepted |
+| [0014](./0014-alembic-with-hypertable-hook.md) | Alembic + TimescaleDB via post-processing hook | Accepted |
